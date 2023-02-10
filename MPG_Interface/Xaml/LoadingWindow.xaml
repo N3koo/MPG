@@ -1,0 +1,7 @@
+﻿<Window x:Class="MPG_Interface.Xaml.LoadingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        Height="300" Width="300" WindowState="Normal" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+    <fa:ImageAwesome Icon="Refresh" Spin="True" SpinDuration="5" Width="200" Height="200"/>
+</Window>
