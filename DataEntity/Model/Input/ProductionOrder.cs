@@ -8,6 +8,7 @@ using System.Data.SqlTypes;
 namespace DataEntity.Model.Input {
 
     public class ProductionOrder {
+
         public virtual string POID { set; get; }
         public virtual string POType { set; get; }
         public virtual string PODescription { set; get; }
@@ -31,9 +32,9 @@ namespace DataEntity.Model.Input {
         public virtual string TechCode { set; get; }
         public virtual string TechVersion { set; get; }
         public virtual int MESStatus { set; get; }
-        public virtual int MPGStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
 
         public ProductionOrder() {
 

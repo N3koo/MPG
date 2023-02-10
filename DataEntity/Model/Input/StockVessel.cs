@@ -20,9 +20,9 @@ namespace DataEntity.Model.Input {
         public virtual decimal ItemQty { set; get; }
         public virtual string ItemQtyUOM { set; get; }
         public virtual int MESStatus { set; get; }
-        public virtual int MPGStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
 
         public StockVessel() {
 

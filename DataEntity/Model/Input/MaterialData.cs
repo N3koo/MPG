@@ -6,7 +6,11 @@ using System;
 
 namespace DataEntity.Model.Input {
 
+    /// <summary>
+    /// Used to store data about the materials
+    /// </summary>
     public class MaterialData {
+
         public virtual int ID { set; get; }
         public virtual string MaterialID { set; get; }
         public virtual string Description { set; get; }
@@ -31,14 +35,21 @@ namespace DataEntity.Model.Input {
         public virtual string WareLoc { set; get; }
         public virtual string ProfitCenter { set; get; }
         public virtual int MESStatus { set; get; }
-        public virtual int MPGStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public MaterialData() {
 
         }
 
+        /// <summary>
+        /// Constructor with data from SAP
+        /// </summary>
+        /// <param name="data">Data from SAP</param>
         public MaterialData(ZMATERIALDATA data) {
             MaterialID = data.MATERIALID;
             Description = data.DESCRIPTION;
@@ -64,6 +75,10 @@ namespace DataEntity.Model.Input {
             ProfitCenter = data.PROFITCENTER;
         }
 
+        /// <summary>
+        /// Setting the details from SAP
+        /// </summary>
+        /// <param name="data">Data from SAP</param>
         public virtual void SetDetails(ZMATERIALDATA data) {
             Description = data.DESCRIPTION;
             GrossWeight = data.GROSSWEIGHT;
@@ -90,8 +105,14 @@ namespace DataEntity.Model.Input {
         }
     }
 
+    /// <summary>
+    /// Used for mapping the material data
+    /// </summary>
     public class MaterialDataMap : ClassMap<MaterialData> {
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public MaterialDataMap() {
             Table("MES2MPG_MaterialData");
 

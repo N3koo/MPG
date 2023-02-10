@@ -4,7 +4,11 @@ using SAPServices;
 
 namespace DataEntity.Model.Input {
 
+    /// <summary>
+    /// Class for materials alternative names
+    /// </summary>
     public class MaterialDataUOMS {
+
         public virtual int ID { get; set; }
         public virtual string MaterialID { get; set; }
         public virtual string UOM { get; set; }
@@ -13,10 +17,17 @@ namespace DataEntity.Model.Input {
         public virtual decimal DENOMINATOR { get; set; }
         public virtual string CATEGORY { get; set; }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public MaterialDataUOMS() {
 
         }
 
+        /// <summary>
+        /// Constructor for SAP data
+        /// </summary>
+        /// <param name="data"></param>
         public MaterialDataUOMS(ZMPGPOALTUOMS data) {
             MaterialID = data.MATERIALID;
             UOM = data.UOM;
@@ -27,7 +38,14 @@ namespace DataEntity.Model.Input {
         }
     }
 
+    /// <summary>
+    /// Mapping the material data alternative names
+    /// </summary>
     public class MaterialAlternativeUaomsMap : ClassMap<MaterialDataUOMS> {
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public MaterialAlternativeUaomsMap() {
             Table("MES2MPG_MaterialDataAlternativeUoms");
 

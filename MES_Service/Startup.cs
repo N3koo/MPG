@@ -1,6 +1,5 @@
 using MES_Service.Interface;
 using MES_Service.Repository;
-using MES_Service.Repository.Command;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

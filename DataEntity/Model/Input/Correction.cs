@@ -4,6 +4,9 @@ using System;
 
 namespace DataEntity.Model.Input {
 
+    /// <summary>
+    /// Used to download the corrections for a command
+    /// </summary>
     public class Correction {
 
         public virtual int ID { set; get; }
@@ -21,8 +24,14 @@ namespace DataEntity.Model.Input {
         public virtual DateTime? MPGRowUpdated { set; get; }
     }
 
+    /// <summary>
+    /// Mapping the correction class
+    /// </summary>
     public class CorrectionMap : ClassMap<Correction> {
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public CorrectionMap() {
             Table("MES2MPG_Correction");
 

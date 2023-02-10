@@ -17,16 +17,15 @@ namespace DataEntity.Model.Input {
         public virtual string AlternativeDesc { set; get; }
         public virtual string Colour { set; get; }
         public virtual int MESStatus { set; get; }
-        public virtual int MPGStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
 
 
         /// <summary>
         /// Default constructor
         /// </summary>
         public AlternativeName() {
-
         }
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace DataEntity.Model.Input {
         /// <summary>
         /// Used to set details
         /// </summary>
-        /// <param name="data">Element with the details f</param>
+        /// <param name="data">Element with the details</param>
         public virtual void SetDetails(ZALTERNATIVEDESCRIPTION data) {
             Language = data.LANGUAGE;
             Description = data.DESCRIPTION;
@@ -74,9 +73,17 @@ namespace DataEntity.Model.Input {
         }
     }
 
+    /// <summary>
+    /// Mapping the alternative name class
+    /// </summary>
     public class AlternativeNameMap : ClassMap<AlternativeName> {
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public AlternativeNameMap() {
             Table("MES2MPG_MaterialDataAlternativeDescription");
+
             _ = CompositeId().KeyProperty(x => x.MaterialID).KeyProperty(x => x.LanguageID);
 
             _ = Map(x => x.Language).Nullable();
