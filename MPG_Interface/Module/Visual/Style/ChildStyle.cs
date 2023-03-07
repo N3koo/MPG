@@ -1,4 +1,4 @@
-﻿using MPG_Interface.Module.Visual.ViewModel;
+﻿using MPG_Interface.Module.Data;
 
 using System.Globalization;
 using System.Windows.Media;
@@ -14,7 +14,7 @@ namespace MPG_Interface.Module.Visual.Style {
     public class ChildStyle : IValueConverter {
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            Operation order = value as Operation;
+            StatusCommand order = value as StatusCommand;
 
             if (string.IsNullOrEmpty(order?.Name)) {
                 return DependencyProperty.UnsetValue;

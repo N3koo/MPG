@@ -71,6 +71,13 @@ namespace DataEntity.Model.Input {
             AlternativeDesc = data.ALTDESCR;
             Colour = data.COLOUR;
         }
+
+        public virtual void SetDetails(AlternativeName name) {
+            Language = name.Language;
+            Description = name.Description;
+            AlternativeDesc = name.AlternativeDesc;
+            Colour = name.Colour;
+        }
     }
 
     /// <summary>

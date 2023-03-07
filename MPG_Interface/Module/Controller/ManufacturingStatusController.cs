@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Controls;
-
-using MPG_Interface.Module.Visual.ViewModel;
+﻿using MPG_Interface.Module.Logic;
 
 using Syncfusion.UI.Xaml.TreeGrid;
+
+using System.Collections.Generic;
+using System.Windows.Controls;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -16,40 +17,49 @@ namespace MPG_Interface.Module.Controller {
         /// <summary>
         /// Reference to the start date
         /// </summary>
-        private readonly DatePicker _startDate;
+        private readonly DatePicker startDate;
 
         /// <summary>
         /// Reference to the end date
         /// </summary>
-        private readonly DatePicker _endDate;
+        private readonly DatePicker endDate;
 
         /// <summary>
         /// Reference to the tree grid
         /// </summary>
-        private readonly SfTreeGrid _tgStatus;
+        private readonly SfTreeGrid tgStatus;
 
         /// <summary>
-        /// Object that implements to logic of the report
-        /// </summary>
-        private readonly OperationView _operation;
-
-        /// <summary>
-        /// Contructor
+        /// Constructor
         /// </summary>
         /// <param name="list">List that contains the elements of the controller</param>
         public ManufacturingStatusController(List<object> list) {
-            _startDate = (DatePicker)list[0];
-            _endDate = (DatePicker)list[1];
-            _tgStatus = (SfTreeGrid)list[2];
+            startDate = (DatePicker)list[0];
+            endDate = (DatePicker)list[1];
+            tgStatus = (SfTreeGrid)list[2];
 
-            _operation = new OperationView();
+            SetEvents();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void SetEvents() {
+            RestClient.Client.StartCall += () => {
+                Application.Current.MainWindow.IsEnabled = false;
+            };
+
+            RestClient.Client.EndCall += () => {
+                Application.Current.MainWindow.IsEnabled = true;
+            };
         }
 
         /// <summary>
         /// Sets the data in the table
         /// </summary>
-        public void SetData() {
-            _tgStatus.ItemsSource = _operation.GetData(_startDate.SelectedDate, _endDate.SelectedDate);
+        public async Task SetData() {
+            tgStatus.ItemsSource = await RestClient.Client.GetStatusCommand(startDate.SelectedDate.Value,
+                endDate.SelectedDate.Value);
         }
     }
 }

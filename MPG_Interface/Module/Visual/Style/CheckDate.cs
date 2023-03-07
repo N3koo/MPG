@@ -1,10 +1,10 @@
-﻿using System.Globalization;
+﻿using MPG_Interface.Module.Data;
+
+using System.Globalization;
 using System.Windows.Media;
 using System.Windows.Data;
 using System.Windows;
 using System;
-
-using MPG_Interface.Module.Visual.ViewModel;
 
 namespace MPG_Interface.Module.Visual.Style {
 
@@ -13,7 +13,7 @@ namespace MPG_Interface.Module.Visual.Style {
     /// </summary>
     public class CheckDate : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is not Report local || local.ExecuteDate == null) {
+            if (value is not ReportCommand local || local.ExecuteDate == null) {
                 return DependencyProperty.UnsetValue;
             }
 

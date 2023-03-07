@@ -194,5 +194,14 @@ namespace MPG_Interface.Properties {
                 return ResourceManager.GetString("SAP_User", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://localhost:44376/.
+        /// </summary>
+        internal static string Service_URL {
+            get {
+                return ResourceManager.GetString("Service_URL", resourceCulture);
+            }
+        }
     }
 }

@@ -165,4 +165,7 @@
   <data name="SAP_User" xml:space="preserve">
     <value>USERMES</value>
   </data>
+  <data name="Service_URL" xml:space="preserve">
+    <value>https://localhost:44376/</value>
+  </data>
 </root>

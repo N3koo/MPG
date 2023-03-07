@@ -1,4 +1,4 @@
-﻿using DataEntity.Model.Input;
+﻿using MPG_Interface.Module.Data;
 
 using System.Globalization;
 using System.Windows.Data;
@@ -10,7 +10,7 @@ namespace MPG_Interface.Module.Visual.Style {
             ProductionOrder order = value as ProductionOrder;
             return order.Status switch {
                 "ELB" => "COMANDA ELIBERATA",
-                "PRLT" => "CCOMANDA TERMINATA",
+                "PRLT" => "COMANDA TERMINATA",
                 "PRLI" => "EROARE COMANDA",
                 "PRLS" => "COMANDA IN PRELUCRARE",
                 "BLOC" => "COMANDA BLOCATA",

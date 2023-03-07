@@ -1,14 +1,18 @@
-using MES_Service.Interface;
-using MES_Service.Repository;
+using MpgWebService.Repository.Interface;
+using MpgWebService.Repository.Command;
+using MpgWebService.Repository;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
-namespace MES_Service {
+namespace MpgWebService {
+
     public class Startup {
+
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
@@ -18,22 +22,29 @@ namespace MES_Service {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
 
-            services.AddSingleton<ICommandRepository, MesCommandRepository>();
+            services.AddSingleton<ICommandRepository, SapCommandRepository>();
             services.AddSingleton<IProductionRepository, ProductionRepository>();
             services.AddSingleton<IReportRepository, ReportRepository>();
+            services.AddSingleton<IMpgRepository, MpgRepository>();
+            services.AddSingleton<ISettingsRepository, SettingsRepository>();
 
             services.AddControllers();
+
             services.AddSwaggerGen(c => {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MES_Service", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MpgWebSerice", Version = "v1" });
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MES_Service v1"));
+                app.UseSwaggerUI(c => {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MpgWebSerice v1");
+                    c.DisplayOperationId();
+                });
             }
 
             app.UseHttpsRedirection();
@@ -44,6 +55,7 @@ namespace MES_Service {
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
+                endpoints.MapSwagger();
             });
         }
     }

@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Windows.Controls;
+﻿using Syncfusion.UI.Xaml.TreeGrid;
 
-using MPG_Interface.Module.Visual.ViewModel;
+using MPG_Interface.Module.Logic;
+using MPG_Interface.Module.Data;
 using MPG_Interface.Xaml;
 
-using Syncfusion.UI.Xaml.TreeGrid;
+using System.Collections.Generic;
+using System.Windows.Controls;
+using System.Threading.Tasks;
+using System.Globalization;
+using System.Windows;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -16,51 +20,66 @@ namespace MPG_Interface.Module.Controller {
         /// <summary>
         /// 
         /// </summary>
-        private readonly DatePicker _startDate;
+        private readonly DatePicker startDate;
 
         /// <summary>
         /// 
         /// </summary>
-        private readonly DatePicker _endDate;
+        private readonly DatePicker endDate;
 
         /// <summary>
         /// 
         /// </summary>
-        private readonly SfTreeGrid _dataGrid;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private readonly ReportView _reportView;
+        private readonly SfTreeGrid dataGrid;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="list"></param>
         public ReportController(List<object> list) {
-            _startDate = list[0] as DatePicker;
-            _endDate = list[1] as DatePicker;
-            _dataGrid = list[2] as SfTreeGrid;
+            startDate = list[0] as DatePicker;
+            endDate = list[1] as DatePicker;
+            dataGrid = list[2] as SfTreeGrid;
 
-            _reportView = new();
+            SetEvents();
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void SetData() {
-            _dataGrid.ItemsSource = _reportView.GetData(_startDate.SelectedDate, _endDate.SelectedDate);
+        private void SetEvents() {
+            RestClient.Client.StartCall += () => {
+                Application.Current.MainWindow.IsEnabled = false;
+            };
+
+            RestClient.Client.EndCall += () => {
+                Application.Current.MainWindow.IsEnabled = true;
+            };
         }
 
-        public void ShowDetails() {
-            Report item = _dataGrid.SelectedItem as Report;
+        /// <summary>
+        /// 
+        /// </summary>
+        public async Task SetData() {
+            dataGrid.ItemsSource = await RestClient.Client.GetReport(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task ShowDetails() {
+            ReportCommand item = dataGrid.SelectedItem as ReportCommand;
+            List<ReportMaterial> materials;
 
             if (item.POID_ID != "-1") {
-                int pail = int.Parse(item.POID.Split("_")[1]);
-                ConsumptionWindow.CreateConsumptionForPail(item.POID_ID, pail);
+                int pail = int.Parse(item.POID.Split("_")[1], CultureInfo.InvariantCulture);
+                materials = await RestClient.Client.GetMaterialsForPail(item.POID_ID, pail);
             } else {
-                ConsumptionWindow.CreateConsumption(item.POID);
+                materials = await RestClient.Client.GetMaterialsForCommand(item.POID);
             }
+
+            ConsumptionWindow.CreateConsumption(materials);
         }
     }
 }

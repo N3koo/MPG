@@ -70,6 +70,15 @@ namespace DataEntity.Model.Input {
             Class = data.CLASS;
             ParamDescr = data.PARAMDESCR;
         }
+
+        /// <summary>
+        /// Setting the details
+        /// </summary>
+        /// <param name="clasification"></param>
+        public virtual void SetDetails(Clasification clasification) {
+            Class = clasification.Class;
+            ParamDescr = clasification.ParamDescr;
+        }
     }
 
     /// <summary>

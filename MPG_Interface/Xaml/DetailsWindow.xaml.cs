@@ -1,38 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using MPG_Interface.Module.Visual;
+
+using System.Collections.Generic;
 using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows;
 using System;
 
-using MPG_Interface.Module.Visual;
-
-using DataEntity.Model.Types;
-
 namespace MPG_Interface.Xaml {
 
     public partial class DetailsWindow : Window {
 
-        private readonly List<DetailElement> _listElements = new();
+        private readonly List<DetailElement> listElements = new();
 
-        private CheckBox _qcAll;
+        private CheckBox qcAll;
 
-        private bool[] _local;
+        private bool[] local;
 
-        private bool[] _original;
+        private bool[] original;
 
-        private string _poid;
+        private string poid;
 
-        public DetailsWindow(string poid) {
+        public DetailsWindow(string qc, string poid) {
             InitializeComponent();
 
-            SetCommandDetails(poid);
+            SetCommandDetails(qc, poid);
         }
 
-        private void SetCommandDetails(string poid) {
-            _poid = poid;
+        private void SetCommandDetails(string qc, string poid) {
+            this.poid = poid;
 
             CreateRows();
-            SetDetails();
+            SetDetails(qc);
             SetEvents();
         }
 
@@ -45,6 +43,7 @@ namespace MPG_Interface.Xaml {
                 TextAlignment = TextAlignment.Center,
 
             });
+
             CurrentRow.Cells.Add(new TableCell(new Paragraph(new Run("Status"))) {
                 TextAlignment = TextAlignment.Center
             });
@@ -58,44 +57,38 @@ namespace MPG_Interface.Xaml {
                 Content = "QC",
             };
 
-            _qcAll = new() {
+            qcAll = new() {
                 VerticalAlignment = VerticalAlignment.Center
             };
 
             _ = panel.Children.Add(label);
-            _ = panel.Children.Add(_qcAll);
+            _ = panel.Children.Add(qcAll);
 
             CurrentRow.Cells.Add(new TableCell(new BlockUIContainer(panel)));
         }
 
-        private void SetDetails() {
-            _local = InputDataCollection.GetQC(_poid);
-            int size = _local.Length;
-
-            _original = new bool[size];
-            Array.Copy(_local, _original, size);
-
-            for (int i = 0; i < size; i++) {
-                DetailElement local = new(_local[i], i + 1, _poid);
-                _listElements.Add(local);
-                tbDetails.RowGroups[0].Rows.Add(local);
+        private void SetDetails(string qc) {
+            for (int i = 0; i < 18; i++) {
+                DetailElement element = new(true, i + 1, poid);
+                listElements.Add(element);
+                tbDetails.RowGroups[0].Rows.Add(element);
             }
         }
 
         private void SetEvents() {
             Closed += (sender, args) => {
-                int size = _listElements.Count;
-                for (int i = 0; i < size; i++) {
-                    _local[i] = _listElements[i].GetStatus();
-                }
-                InputDataCollection.SetQC(_local, _poid);
+                int size = listElements.Count;
+                /*for (int i = 0; i < size; i++) {
+                    local[i] = listElements[i].GetStatus();
+                }/**/
+                //InputDataCollection.SetQC(_local, _poid);
 
                 Close();
             };
 
-            _qcAll.Click += (sender, args) => {
-                bool check = (bool)_qcAll.IsChecked;
-                _listElements.ForEach(item => item.SetStatus(check));
+            qcAll.Click += (sender, args) => {
+                bool check = (bool)qcAll.IsChecked;
+                listElements.ForEach(item => item.SetStatus(check));
             };
 
         }

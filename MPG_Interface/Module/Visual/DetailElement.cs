@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows;
 
 namespace MPG_Interface.Module.Visual {
+
     public class DetailElement : TableRow {
 
         private readonly CheckBox _qcStatus;

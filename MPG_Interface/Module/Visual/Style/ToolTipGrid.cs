@@ -1,10 +1,10 @@
-﻿using System.Globalization;
+﻿using Syncfusion.UI.Xaml.TreeGrid.Cells;
+
+using MPG_Interface.Module.Data;
+
+using System.Globalization;
 using System.Windows.Data;
 using System;
-
-using MPG_Interface.Module.Visual.ViewModel;
-
-using Syncfusion.UI.Xaml.TreeGrid.Cells;
 
 namespace MPG_Interface.Module.Visual.Style {
     public class ToolTipGrid : IValueConverter {
@@ -12,7 +12,7 @@ namespace MPG_Interface.Module.Visual.Style {
             if (value is TreeGridDataContextHelper) {
                 return (value as TreeGridDataContextHelper).Value switch {
                     "ELB" => "COMANDA ELIBERATA",
-                    "PRLT" => "CCOMANDA TERMINATA",
+                    "PRLT" => "COMANDA TERMINATA",
                     "PRLI" => "EROARE COMANDA",
                     "PRLS" => "COMANDA IN PRELUCRARE",
                     "BLOC" => "COMANDA BLOCATA",
@@ -20,8 +20,8 @@ namespace MPG_Interface.Module.Visual.Style {
                 };
             }
 
-            if (value is Report) {
-                return (value as Report).Status switch {
+            if (value is ReportCommand) {
+                return (value as ReportCommand).Status switch {
                     "ELB" => "COMANDA ELIBERATA",
                     "PRLT" => "COMANDA TERMINATA",
                     "PRLI" => "EROARE COMANDA",

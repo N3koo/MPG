@@ -59,8 +59,8 @@ namespace DataEntity.Model.Types {
             _list.Clear();
         }
 
-        public static bool[] GetQC(string poid) {
-            return _list.First(p => p.Order.POID == poid).QualityCheck;
+        public static string GetQC(string poid) {
+            return _list.First(p => p.Order.POID == poid).LotHeader.PozQC;
         }
 
         public static void SetQC(bool[] qc, string poid) {

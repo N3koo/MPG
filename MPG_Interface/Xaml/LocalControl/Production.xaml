@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="MPG_Interface.Xaml.LocalControl.Production"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:MPG_Interface.Module.Visual.Style"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+             mc:Ignorable="d" 
+             >
+
+    <UserControl.Resources>
+        <local:ZerosRemoveFormat x:Key="removeZero"/>
+        <local:ToolTipGrid x:Key="toolTipGrid"/>
+        <local:ChildStyle x:Key="converter"/>
+        <local:CheckDate x:Key="checkDate"/>
+
+        <Style TargetType="syncfusion:TreeGridRowControl">
+            <Setter Property="Background" Value="{Binding Converter={StaticResource converter}}"/>
+            <Setter Property="Background" Value="{Binding Converter={StaticResource checkDate}}"/>
+        </Style>
+
+        <Style TargetType="syncfusion:TreeGridHeaderCell" x:Key="headerStyle">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+        <DataTemplate x:Key="tooltipTree">
+            <Label Content="{Binding Converter={StaticResource toolTipGrid}}"/>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="10, 10, 10, 10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="9*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="8*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <Label Content="Date inceput"/>
+            <DatePicker x:Name="dpStartFollow" Margin="10, 0, 0, 0"/>
+            <Label Content="Data Sfarsit" Margin="10, 0, 0, 0"/>
+            <DatePicker x:Name="dpEndFollow" Margin="10, 0, 0, 0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+            <Button x:Name="btnSelect" Content="Afisare" Height="30" />
+        </StackPanel>
+
+        <syncfusion:SfTreeGrid x:Name="tgStatus" Grid.Row="1" Grid.Column="0" 
+                                       ItemsSource="{Binding StatusCommand}"
+                                       ParentPropertyName="POID"
+                                       ChildPropertyName="POID_ID"
+                                       SelfRelationRootValue="-1"
+                                       FilterLevel="All"
+                                       AutoGenerateColumns="False"
+                                       ShowRowHeader="True"
+                                       NavigationMode="Row"
+                                       SelectionMode="Extended"
+                                       ColumnSizer="Star"
+                                       HeaderStyle="{StaticResource headerStyle}"
+                                       >
+            <syncfusion:SfTreeGrid.Columns>
+                <syncfusion:TreeGridTextColumn HeaderText="POID" MappingName="POID" DisplayBinding="{Binding Path=POID, Converter={StaticResource removeZero}}" TextAlignment="Center" AllowResizing="True" Width="150" AllowFiltering="True"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Cod Produs" MappingName="MaterialID" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto" AllowFiltering="True"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Nume" MappingName="Name" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto" />
+                <syncfusion:TreeGridNumericColumn HeaderText="Cantitate" MappingName="Quantity" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Unit" MappingName="Unit" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Date" MappingName="Date" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto" Width="150"/>
+                <syncfusion:TreeGridTextColumn HeaderText="KoberLot" MappingName="KoberLot" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Status" MappingName="Status" TextAlignment="Center" AllowResizing="True" ShowToolTip="True" ToolTipTemplate="{StaticResource tooltipTree}" SetCellBoundToolTip="True" ColumnSizer="Auto" AllowFiltering="True"/>
+                <syncfusion:TreeGridTextColumn HeaderText="BonPredare" MappingName="BonPredare" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Consum" MappingName="Consumption" TextAlignment="Center" AllowResizing="True" ColumnSizer="Auto"/>
+            </syncfusion:SfTreeGrid.Columns>
+        </syncfusion:SfTreeGrid>
+    </Grid>
+</UserControl>

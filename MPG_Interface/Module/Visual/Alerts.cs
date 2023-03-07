@@ -1,6 +1,4 @@
-﻿using MPG_Interface.Xaml;
-
-using System.Windows;
+﻿using System.Windows;
 using System;
 
 namespace MPG_Interface.Module.Visual {
@@ -12,12 +10,6 @@ namespace MPG_Interface.Module.Visual {
         /// </summary>
         private static readonly Action<bool, string> _showLoading = (bool status, string title) => {
             Application.Current.MainWindow.IsEnabled = status;
-
-            if (status) {
-                LoadingWindow.CloseWindow();
-            } else {
-                LoadingWindow.Show(title);
-            }
         };
 
         /// <summary>

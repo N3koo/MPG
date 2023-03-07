@@ -103,6 +103,31 @@ namespace DataEntity.Model.Input {
             ProfitCenter = data.PROFITCENTER;
             MPGRowUpdated = DateTime.Now;
         }
+
+        public virtual void SetDetails(MaterialData data) {
+            Description = data.Description;
+            GrossWeight = data.GrossWeight;
+            NetWeight = data.NetWeight;
+            WeightUnit = data.WeightUnit;
+            Volume = data.Volume.ToString();
+            VolumeUnit = data.VolumeUnit;
+            ShelfLife = data.ShelfLife;
+            Plant = data.Plant;
+            BaseUOM = data.BaseUOM;
+            Type = data.Type;
+            TypeDescr = data.TypeDescr;
+            MatGroup = data.MatGroup;
+            MatGroupDescr = data.MatGroupDescr;
+            MatSeries = data.MatSeries;
+            EAN = data.EAN;
+            Standard = data.Standard;
+            BaseMaterial = data.BaseMaterial;
+            Status = data.Status;
+            PropDep = data.PropDep;
+            WareLoc = data.WareLoc;
+            ProfitCenter = data.ProfitCenter;
+            MPGRowUpdated = DateTime.Now;
+        }
     }
 
     /// <summary>

@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MPG_Interface.Xaml"
         mc:Ignorable="d"
         Title="ConsumptionWindow" ResizeMode="NoResize" Height="450" Width="800">
     <Grid>
@@ -22,6 +21,7 @@
                 <DataGridTextColumn Header="Item" Binding="{Binding Item}"/>
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}"/>
                 <DataGridTextColumn Header="NetQuantity" Binding="{Binding NetQuantity, StringFormat={}{0:N3}}"/>
+                <DataGridTextColumn Header="BrutQuantity" Binding="{Binding BrutQuantity, StringFormat={}{0:N3}}"/>
                 <DataGridTextColumn Header="ItemUom" Binding="{Binding ItemUom}"/>
             </DataGrid.Columns>
         </DataGrid>

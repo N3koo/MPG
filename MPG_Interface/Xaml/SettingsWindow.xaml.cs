@@ -1,6 +1,8 @@
-﻿using MPG_Interface.Module.Visual.ViewModel;
+﻿using MPG_Interface.Module.Logic;
+using MPG_Interface.Module.Visual.ViewModel;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MPG_Interface.Xaml {
@@ -11,18 +13,12 @@ namespace MPG_Interface.Xaml {
     public partial class SettingsWindow : Window {
 
         /// <summary>
-        /// List with the configuration elements
-        /// </summary>
-        private readonly List<SettingsElement> _list = new();
-
-        /// <summary>
         /// Constructor that inserts the elements
         /// </summary>
         public SettingsWindow() {
             InitializeComponent();
 
             SetEvents();
-            SetElements();
         }
 
         /// <summary>
@@ -31,12 +27,10 @@ namespace MPG_Interface.Xaml {
         private void SetEvents() {
 
             // Event for saving the data
-            btnOK.Click += (sender, args) => {
-                _list.ForEach(item => {
-                    Properties.Settings.Default[item.Name] = item.DefaultValue;
-                });
+            btnOK.Click += async (sender, args) => {
+                List<SettingsElement> elements = (List<SettingsElement>)grid.ItemsSource;
+                await RestClient.Client.SendSettings(elements);
 
-                Properties.Settings.Default.Save();
                 Close();
             };
 
@@ -44,17 +38,17 @@ namespace MPG_Interface.Xaml {
             btnCancel.Click += (sender, args) => {
                 Close();
             };
+
+            Loaded += async (sender, args) => {
+                await SetElements();
+            };
         }
 
         /// <summary>
         /// Sets the elements in the window
         /// </summary>
-        private void SetElements() {
-            _list.Add(new SettingsElement { Name = "Plant", DefaultValue = Properties.Settings.Default.Plant });
-            _list.Add(new SettingsElement { Name = "Code", DefaultValue = Properties.Settings.Default.Code });
-            _list.Add(new SettingsElement { Name = "Input", DefaultValue = Properties.Settings.Default.Input });
-            _list.Add(new SettingsElement { Name = "Connection", DefaultValue = Properties.Settings.Default.Connection });
-            grid.ItemsSource = _list;
+        private async Task SetElements() {
+            grid.ItemsSource = await RestClient.Client.GetSettings();
         }
     }
 }
