@@ -1,6 +1,7 @@
-﻿using DataEntity.Model.Input;
-
+﻿using MpgWebService.Properties;
 using MpgWebService.DTO;
+
+using DataEntity.Model.Input;
 
 using SAPServices;
 
@@ -36,7 +37,7 @@ namespace MpgWebService.Data.Extension {
 
             var receipeHeader = new ZGOODSRECEIPTHEADER {
                 POID = po.POID,
-                GOODSRECEIPTTYPE = "101",
+                GOODSRECEIPTTYPE = Resources.RECEIPT_TYPE,
                 POSTINGDATE = date,
                 DOCDATE = date,
                 PLANT = po.PlantID,
@@ -46,7 +47,7 @@ namespace MpgWebService.Data.Extension {
 
             var receipeItem = new ZGOODSRECEIPTITEMS {
                 POID = po.POID,
-                GOODSRECEIPTTYPE = "101",
+                GOODSRECEIPTTYPE = Resources.RECEIPT_TYPE,
                 ITEMPOSITION = position,
                 MATERIALID = po.MaterialID,
                 QUANTITYPRODUCED = pailsNumber,
@@ -67,7 +68,7 @@ namespace MpgWebService.Data.Extension {
 
             var headerBC = new ZCONSUMPTIONHEADER {
                 POID = po.POID,
-                CONSUMPTIONTYPE = "261",
+                CONSUMPTIONTYPE = Resources.CONSUMPTION_TYPE,
                 POSTINGDATE = date,
                 DOCDATE = date,
                 MATERIALID = po.MaterialID,
@@ -81,7 +82,7 @@ namespace MpgWebService.Data.Extension {
             list.ForEach(item => {
                 items.Add(new ZCONSUMPTIONITEMS {
                     POID = po.POID,
-                    CONSUMPTIONTYPE = "261",
+                    CONSUMPTIONTYPE = Resources.CONSUMPTION_TYPE,
                     ITEMPOSITION = item.ItemPosition,
                     ROWMATERIALID = item.ItemStorageLoc,
                     QUANTITY = item.ItemQty,

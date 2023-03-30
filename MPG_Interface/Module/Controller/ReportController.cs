@@ -9,6 +9,8 @@ using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Globalization;
 using System.Windows;
+using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Data.Output;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -61,7 +63,8 @@ namespace MPG_Interface.Module.Controller {
         /// 
         /// </summary>
         public async Task SetData() {
-            dataGrid.ItemsSource = await RestClient.Client.GetReport(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
+            Period period = FactoryData.CreatePeriod(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
+            dataGrid.ItemsSource = await RestClient.Client.GetReport(period);
         }
 
         /// <summary>

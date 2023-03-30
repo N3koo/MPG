@@ -1,10 +1,10 @@
-﻿using MpgWebService.Repository.Interface;
+﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Presentation.Request;
+using MpgWebService.Business.Service;
 using MpgWebService.DTO;
 
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,24 +14,24 @@ namespace MpgWebService.Presentation.Controllers {
     [ApiController]
     public class ReportController : ControllerBase {
 
-        private readonly IReportRepository repository;
+        private readonly IReportService repository;
 
-        public ReportController(IReportRepository repository) {
-            this.repository = repository;
+        public ReportController() {
+            repository = new ReportService();
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ReportCommand>> GetReport(DateTime start, DateTime end) {
-            return await repository.GetReport(start, end);
+        public async Task<IEnumerable<ReportCommand>> GetReport([FromQuery] Period period) {
+            return await repository.GetReport(period);
         }
 
         [HttpGet("Materials/{POID}")]
-        public async Task<IEnumerable<ReportMaterial>> GetCommandMaterials([Required] string POID) {
+        public async Task<IEnumerable<ReportMaterial>> GetCommandMaterials(string POID) {
             return await repository.GetMaterialsForCommand(POID);
         }
 
         [HttpGet("Materials/{POID}/{pail}")]
-        public async Task<IEnumerable<ReportMaterial>> GetPailMaterials([Required] string POID, [Required] int pail) {
+        public async Task<IEnumerable<ReportMaterial>> GetPailMaterials(string POID, int pail) {
             return await repository.GetMaterialsForPail(POID, pail);
         }
 

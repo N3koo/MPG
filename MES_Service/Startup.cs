@@ -1,6 +1,3 @@
-using MpgWebService.Repository.Interface;
-using MpgWebService.Repository.Command;
-using MpgWebService.Repository;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +5,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Http;
+using static System.Net.Mime.MediaTypeNames;
+using Microsoft.AspNetCore.Diagnostics;
+using System.IO;
+using System.Net.Http;
 
 namespace MpgWebService {
 
@@ -21,13 +23,6 @@ namespace MpgWebService {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-
-            services.AddSingleton<ICommandRepository, SapCommandRepository>();
-            services.AddSingleton<IProductionRepository, ProductionRepository>();
-            services.AddSingleton<IReportRepository, ReportRepository>();
-            services.AddSingleton<IMpgRepository, MpgRepository>();
-            services.AddSingleton<ISettingsRepository, SettingsRepository>();
-
             services.AddControllers();
 
             services.AddSwaggerGen(c => {
@@ -45,6 +40,18 @@ namespace MpgWebService {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MpgWebSerice v1");
                     c.DisplayOperationId();
                 });
+
+                app.UseExceptionHandler(handler => {
+                    handler.Run(async context => {
+                        var exception = context.Features.Get<IExceptionHandlerPathFeature>();
+
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(exception.Error.Message);
+                    });
+                });
+
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();

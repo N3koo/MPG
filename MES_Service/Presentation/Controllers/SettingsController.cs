@@ -1,4 +1,5 @@
-﻿using MpgWebService.Repository.Interface;
+﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Business.Service;
 using MpgWebService.DTO;
 
 using Microsoft.AspNetCore.Mvc;
@@ -11,32 +12,22 @@ namespace MpgWebService.Presentation.Controllers {
     [Route("[controller]")]
     public class SettingsController : ControllerBase {
 
-        private readonly ISettingsRepository repository;
+        private readonly ISettingsService service;
 
-        public SettingsController(ISettingsRepository repository) {
-            this.repository = repository;
+        public SettingsController() {
+            service = new SettingsService();
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SettingsElement>>> GetSettings() {
-            var result = await repository.GetSettings();
-
-            if (result.Count == 0) {
-                return NoContent();
-            }
-
-            return result;
+        public async Task<IActionResult> GetSettings() {
+            var result = await service.GetSettings();
+            return Ok(result);
         }
 
         [HttpPut]
-        public async Task<ActionResult<bool>> SetSettings([FromBody] List<SettingsElement> settings) {
-            var result = await repository.SetSettings(settings);
-
-            if (!result) {
-                return NoContent();
-            }
-
-            return result;
+        public async Task<IActionResult> SetSettings([FromBody] List<SettingsElement> settings) {
+            var result = await service.SetSettings(settings);
+            return Ok(result);
         }
     }
 }

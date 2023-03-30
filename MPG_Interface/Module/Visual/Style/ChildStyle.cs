@@ -1,4 +1,4 @@
-﻿using MPG_Interface.Module.Data;
+﻿using MPG_Interface.Module.Data.Input;
 
 using System.Globalization;
 using System.Windows.Media;

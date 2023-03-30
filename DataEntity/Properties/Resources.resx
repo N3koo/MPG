@@ -132,6 +132,10 @@
   <data name="CMD_PRLT" xml:space="preserve">
     <value>PRLT</value>
   </data>
+  <data name="MaximumDosageTime" xml:space="preserve">
+    <value>30</value>
+    <comment>Timpul maxim de asteptare pentru o dozare</comment>
+  </data>
   <data name="MES_Database" xml:space="preserve">
     <value>MPGINTERFACE</value>
   </data>

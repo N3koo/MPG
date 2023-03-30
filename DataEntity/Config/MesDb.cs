@@ -63,6 +63,7 @@ namespace DataEntity.Config {
                         _ = m.FluentMappings.AddFromAssemblyOf<StockVessel>();
                         _ = m.FluentMappings.AddFromAssemblyOf<Clasification>();
                         _ = m.FluentMappings.AddFromAssemblyOf<AlternativeName>();
+                        _ = m.FluentMappings.AddFromAssemblyOf<SapTransfer>();
                     })
                     .ExposeConfiguration(config => {
                         _ = new SchemaExport(config);

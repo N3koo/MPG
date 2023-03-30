@@ -1,32 +1,31 @@
-﻿using MPG_Interface.Module.Data;
+﻿using MPG_Interface.Module.Data.Output;
+using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Data;
 
+using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Globalization;
 using System.Text.Json;
 using System.Net.Http;
-using System.Web;
 using System;
-using MPG_Interface.Module.Visual.ViewModel;
-using System.Diagnostics;
-using System.Net.Http.Headers;
+using MPG_Interface.Module.Visual;
 
 namespace MPG_Interface.Module.Logic {
 
     /// <summary>
     /// 
     /// </summary>
-    public delegate void OnStartCall();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public delegate void OnEndCall();
-
-    /// <summary>
-    /// 
-    /// </summary>
     public class RestClient {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public delegate void OnStartCall();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public delegate void OnEndCall();
 
         public static readonly RestClient Client = new();
 
@@ -39,242 +38,287 @@ namespace MPG_Interface.Module.Logic {
             client = FactoryData.CreateClient();
         }
 
-        public async Task<List<ReportCommand>> GetReport(DateTime start, DateTime end) {
+        public Task<List<ReportCommand>> GetReport(Period period) => CheckException(async () => {
             StartCall?.Invoke();
 
             List<ReportCommand> result = new();
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["start"] = start.ToString(CultureInfo.InvariantCulture);
-            query["end"] = end.ToString(CultureInfo.InvariantCulture);
+            NameValueCollection query = FactoryData.CreateQueryFromPeriod(period);
             string address = $"Report?{query}";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result.AddRange(JsonSerializer.Deserialize<List<ReportCommand>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task SendSettings(List<SettingsElement> elements) {
-            var json = new StringContent(JsonSerializer.Serialize(elements));
-            json.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        public Task SendSettings(List<SettingsElement> elements) => CheckException(async () => {
+            StringContent json = FactoryData.CreateBody(elements);
             string address = $"Settings";
 
             HttpResponseMessage response = await client.PutAsync(address, json);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                Debug.WriteLine("A mers");
+                return JsonSerializer.Deserialize<bool>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
-            Debug.WriteLine("Nu a mers");
-        }
+            return false;
+        });
 
-        public async Task<List<SettingsElement>> GetSettings() {
+        public Task<List<SettingsElement>> GetSettings() => CheckException(async () => {
             List<SettingsElement> result = new();
             string address = $"Settings";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result.AddRange(JsonSerializer.Deserialize<List<SettingsElement>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             return result;
-        }
+        });
 
-        public async Task<List<ReportMaterial>> GetMaterialsForCommand(string POID) {
+        public Task<List<ReportMaterial>> GetMaterialsForCommand(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
             List<ReportMaterial> result = new();
             string address = $"Report/materials/{POID}";
+
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result.AddRange(JsonSerializer.Deserialize<List<ReportMaterial>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<List<ReportMaterial>> GetMaterialsForPail(string POID, int pail) {
+        public Task<List<ReportMaterial>> GetMaterialsForPail(string POID, int pail) => CheckException(async () => {
             StartCall?.Invoke();
 
             List<ReportMaterial> result = new();
             string address = $"Report/materials/{POID}/{pail}";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result.AddRange(JsonSerializer.Deserialize<List<ReportMaterial>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<List<StatusCommand>> GetStatusCommand(DateTime start, DateTime end) {
+        public Task<List<StatusCommand>> GetStatusCommand(Period period) => CheckException(async () => {
             StartCall?.Invoke();
 
             List<StatusCommand> result = new();
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["start"] = start.ToString(CultureInfo.InvariantCulture);
-            query["end"] = end.ToString(CultureInfo.InvariantCulture);
+            NameValueCollection query = FactoryData.CreateQueryFromPeriod(period);
             string address = $"Production?{query}";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result.AddRange(JsonSerializer.Deserialize<List<StatusCommand>>(data));
-            }
-
-            EndCall?.Invoke();
-            return new List<StatusCommand>();
-        }
-
-        public async Task<List<ProductionOrder>> GetCommands(DateTime start, DateTime end) {
-            StartCall?.Invoke();
-
-            List<ProductionOrder> result = new();
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["start"] = start.ToString(CultureInfo.InvariantCulture);
-            query["end"] = end.ToString(CultureInfo.InvariantCulture);
-            query["PageNumber"] = "2";
-            query["PageSize"] = "10";
-
-            string address = $"Command?{query}";
-
-            Debug.WriteLine(address);
-
-            HttpResponseMessage response = await client.GetAsync(address);
-
-            if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
-                result.AddRange(JsonSerializer.Deserialize<List<ProductionOrder>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<bool> CheckPriority(string priority) {
+        public Task<List<ProductionOrder>> GetCommands(Period period) => CheckException(async () => {
+            StartCall?.Invoke();
+
+            List<ProductionOrder> result = new();
+            var query = FactoryData.CreateQueryFromPeriod(period);
+            string address = $"Command?{query}";
+
+            HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode) {
+                result.AddRange(JsonSerializer.Deserialize<List<ProductionOrder>>(data));
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
+            }
+
+            EndCall?.Invoke();
+            return result;
+        });
+
+
+        public Task<bool> CheckPriority(string priority) => CheckException(async () => {
             string address = $"Command/Priority/{priority}";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<bool>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             return false;
-        }
+        });
 
-        public async Task<bool> BlockCommand(string POID) {
+        public Task<bool> BlockCommand(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
             bool result = false;
             string address = $"Command/Block/{POID}";
 
             HttpResponseMessage response = await client.DeleteAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result = JsonSerializer.Deserialize<bool>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<bool> CloseCommand(string POID) {
+        public Task<bool> CloseCommand(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
             bool result = false;
             string address = $"Command/Close/{POID}";
 
             HttpResponseMessage response = await client.PutAsync(address, null);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result = JsonSerializer.Deserialize<bool>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<bool> PartialProduction(string POID) {
+        public Task<bool> PartialProduction(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
             bool result = false;
             string address = $"Command/Partial/{POID}";
 
             HttpResponseMessage response = await client.PutAsync(address, null);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result = JsonSerializer.Deserialize<bool>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<bool> DownloadMaterials() {
+        public Task<string> DownloadMaterials() => CheckException(async () => {
             StartCall?.Invoke();
 
-            bool result = false;
+            string result = string.Empty;
             string address = $"Command/Materials";
 
             HttpResponseMessage response = await client.PostAsync(address, null);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
-                result = JsonSerializer.Deserialize<bool>(data);
+                result = JsonSerializer.Deserialize<string>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<bool> StartCommand(string POID) {
+        public Task<string> StartCommand(StartCommand command) => CheckException(async () => {
             StartCall?.Invoke();
 
-            bool result = false;
-            string address = $"Command/Start/{POID}";
+            string result = string.Empty;
+            StringContent body = FactoryData.CreateBody(command);
+            string address = $"Command/Start";
 
-            HttpResponseMessage response = await client.PutAsync(address, null);
+            HttpResponseMessage response = await client.PutAsync(address, body);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
-                result = JsonSerializer.Deserialize<bool>(data);
+                result = JsonSerializer.Deserialize<string>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             EndCall?.Invoke();
             return result;
-        }
+        });
 
-        public async Task<string> GetQC(string POID) {
+        public Task<string> GetQC(string POID) => CheckException(async () => {
             string result = null;
             string address = $"Command/QC/{POID}";
 
             HttpResponseMessage response = await client.GetAsync(address);
+            string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                string data = await response.Content.ReadAsStringAsync();
                 result = JsonSerializer.Deserialize<string>(data);
+            } else {
+                string message = JsonSerializer.Deserialize<string>(data);
+                Alerts.ShowMessage(message);
             }
 
             return result;
+        });
+
+        private async Task<T> CheckException<T>(Func<Task<T>> function) {
+            try {
+                return await function();
+            } catch (Exception ex) {
+                Alerts.ShowMessage(ex.Message);
+            }
+
+            EndCall?.Invoke();
+            return default;
         }
     }
 }

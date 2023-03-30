@@ -5,6 +5,7 @@ using MPG_Interface.Module.Data;
 using System.Globalization;
 using System.Windows.Data;
 using System;
+using MPG_Interface.Module.Data.Input;
 
 namespace MPG_Interface.Module.Visual.Style {
     public class ToolTipGrid : IValueConverter {

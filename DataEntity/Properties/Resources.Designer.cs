@@ -106,6 +106,15 @@ namespace DataEntity.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 30.
+        /// </summary>
+        internal static string MaximumDosageTime {
+            get {
+                return ResourceManager.GetString("MaximumDosageTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MPGINTERFACE.
         /// </summary>
         internal static string MES_Database {

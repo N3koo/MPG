@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Windows;
+using MPG_Interface.Module.Data;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -58,8 +59,8 @@ namespace MPG_Interface.Module.Controller {
         /// Sets the data in the table
         /// </summary>
         public async Task SetData() {
-            tgStatus.ItemsSource = await RestClient.Client.GetStatusCommand(startDate.SelectedDate.Value,
-                endDate.SelectedDate.Value);
+            var period = FactoryData.CreatePeriod(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
+            tgStatus.ItemsSource = await RestClient.Client.GetStatusCommand(period);
         }
     }
 }

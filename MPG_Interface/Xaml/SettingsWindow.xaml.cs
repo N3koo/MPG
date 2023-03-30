@@ -1,5 +1,5 @@
-﻿using MPG_Interface.Module.Logic;
-using MPG_Interface.Module.Visual.ViewModel;
+﻿using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Logic;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;

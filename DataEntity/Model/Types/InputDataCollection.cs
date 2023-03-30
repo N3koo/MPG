@@ -1,5 +1,5 @@
 ﻿using DataEntity.Model.Input;
-
+using DataEntity.Model.Output;
 using SAPServices;
 
 using System.Collections.Generic;
@@ -38,8 +38,8 @@ namespace DataEntity.Model.Types {
             return _list.Select(p => p.Order).ToList();
         }
 
-        public static short ExportCommand(string poid) {
-            return _list.First(p => p.Order.POID == poid).ExportData();
+        public static List<ProductionOrderPailStatus> ExportCommand(string poid, int prioriry, bool[] qc) {
+            return _list.First(p => p.Order.POID == poid).ExportData(prioriry, qc);
         }
 
         public static ProductionOrder GetCommand(string poid) {
@@ -60,12 +60,9 @@ namespace DataEntity.Model.Types {
         }
 
         public static string GetQC(string poid) {
-            return _list.First(p => p.Order.POID == poid).LotHeader.PozQC;
+            return _list.FirstOrDefault(p => p.Order.POID == poid)?.LotHeader.PozQC;
         }
 
-        public static void SetQC(bool[] qc, string poid) {
-            _list.First(p => p.Order.POID == poid).QualityCheck = qc;
-        }
 
         public static void SetStatus(string poid, string status) {
             if (_list != null && _list.Count != 0) {
@@ -75,10 +72,6 @@ namespace DataEntity.Model.Types {
 
         public static List<ProductionOrder> GetCommandsByStatus(string status) {
             return string.IsNullOrEmpty(status) ? _list.Select(p => p.Order).ToList() : _list.Where(p => p.Order.Status == status).Select(p => p.Order).ToList();
-        }
-
-        public static void BlockCommand(string poid) {
-            _list.First(p => p.Order.POID == poid).BlockCommand();
         }
 
         /// <summary>
@@ -104,13 +97,9 @@ namespace DataEntity.Model.Types {
             response.MPGPOLOTDET.Where(p => p.POID == poid)
                 .ToList().ForEach(data => item.LotDetails.Add(new ProductionOrderLotDetail(data)));
 
-            /// TODO: Remove POZQC initialize
             response.MPGPOLOTHEADER.Where(p => p.POID == poid).ToList().ForEach(data => {
                 item.LotHeader = new(data);
-                item.LotHeader.PozQC = "1";
             });
-
-            item.QualityCheck = item.SetQC();
 
             _list.Add(item);
         }

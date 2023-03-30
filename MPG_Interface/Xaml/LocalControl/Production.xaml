@@ -12,11 +12,9 @@
         <local:ZerosRemoveFormat x:Key="removeZero"/>
         <local:ToolTipGrid x:Key="toolTipGrid"/>
         <local:ChildStyle x:Key="converter"/>
-        <local:CheckDate x:Key="checkDate"/>
 
         <Style TargetType="syncfusion:TreeGridRowControl">
             <Setter Property="Background" Value="{Binding Converter={StaticResource converter}}"/>
-            <Setter Property="Background" Value="{Binding Converter={StaticResource checkDate}}"/>
         </Style>
 
         <Style TargetType="syncfusion:TreeGridHeaderCell" x:Key="headerStyle">

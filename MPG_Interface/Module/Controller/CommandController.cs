@@ -1,4 +1,6 @@
-﻿using MPG_Interface.Module.Visual;
+﻿using MPG_Interface.Module.Data.Output;
+using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Visual;
 using MPG_Interface.Module.Logic;
 using MPG_Interface.Module.Data;
 using MPG_Interface.Xaml;
@@ -6,9 +8,10 @@ using MPG_Interface.Xaml;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Threading.Tasks;
+using System.Globalization;
 using System.Windows;
 using System.Linq;
-using System;
+using System.Collections.ObjectModel;
 
 namespace MPG_Interface.Module.Interfaces {
 
@@ -60,33 +63,30 @@ namespace MPG_Interface.Module.Interfaces {
         /// </summary>
         private void SetEvents() {
             dataGrid.CellEditEnding += async (sender, args) => {
+                ProductionOrder order = args.Row.Item as ProductionOrder;
                 DataGridCellInfo cellInfo = dataGrid.SelectedCells[9];
                 string priority = (cellInfo.Column.GetCellContent(cellInfo.Item) as TextBox).Text;
 
                 // Check if the priority field has some data or it's only numbers
                 if (string.IsNullOrEmpty(priority) || !priority.All(char.IsDigit)) {
                     Alerts.ShowMessage("Verificati valoarea introdusa");
-                    dataGrid.ItemsSource = oldList;
+                    ResetDataGrid(order);
                     return;
                 }
 
-                if (await RestClient.Client.CheckPriority(priority)) {
+                if (!await RestClient.Client.CheckPriority(priority)) {
+                    await CreateQC(order);
+
                     Alerts.ShowMessage("Prioritatea a fost setata");
                 } else {
+                    ResetDataGrid(order);
                     Alerts.ShowMessage("Prioritatea nu a putut fi setata");
-                    dataGrid.ItemsSource = oldList;
                 }
             };
 
             dataGrid.PreparingCellForEdit += (sender, args) => {
                 DataGridCellInfo cellInfo = dataGrid.SelectedCells[9];
                 ProductionOrder order = (ProductionOrder)cellInfo.Item;
-
-                // Check if priority is already set
-                if (!string.IsNullOrEmpty(order.Priority)) {
-                    Alerts.ShowMessage("Nu se mai poate seta o noua prioritate");
-                    return;
-                }
 
                 // Check is the command is done or blocked
                 if (order.Status != "ELB") {
@@ -116,6 +116,17 @@ namespace MPG_Interface.Module.Interfaces {
             dataGrid.FontWeight = FontWeights.DemiBold;
         }
 
+        private void ResetDataGrid(ProductionOrder order) {
+            dataGrid.ItemsSource = null;
+            order.Priority = null;
+            dataGrid.ItemsSource = oldList;
+        }
+
+        private async Task CreateQC(ProductionOrder order) {
+            string qc = await RestClient.Client.GetQC(order.POID);
+            _ = StartCommand.CreateCommand(order.POID, qc, (int)order.PlannedQtyBUC);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -129,14 +140,12 @@ namespace MPG_Interface.Module.Interfaces {
         /// Closes the command
         /// </summary>
         public async Task CloseCommand() {
-            if (!IsItemSelected()) {
+            ProductionOrder po;
+            if ((po = IsItemSelected()) == null) {
                 return;
             }
 
-            DataGridCellInfo cell = dataGrid.SelectedCells[9];
-            string POID = (cell.Item as ProductionOrder).POID;
-
-            if (await RestClient.Client.CloseCommand(POID)) {
+            if (await RestClient.Client.CloseCommand(po.POID)) {
                 Alerts.ShowMessage("Commanda inchisa");
             }
         }
@@ -146,14 +155,12 @@ namespace MPG_Interface.Module.Interfaces {
         /// </summary>
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task PartialReport() {
-            if (!IsItemSelected()) {
+            ProductionOrder po;
+            if ((po = IsItemSelected()) == null) {
                 return;
             }
 
-            DataGridCellInfo cell = dataGrid.SelectedCells[9];
-            string POID = (cell.Item as ProductionOrder).POID;
-
-            if (await RestClient.Client.PartialProduction(POID)) {
+            if (await RestClient.Client.PartialProduction(po.POID)) {
                 Alerts.ShowMessage("");
             }
         }
@@ -162,13 +169,13 @@ namespace MPG_Interface.Module.Interfaces {
         /// Checks if an item is selected
         /// </summary>
         /// <returns>True if a command is selected <br/> False otherwise</returns>
-        private bool IsItemSelected() {
-            if (dataGrid.SelectedCells.Count == 0) {
+        private ProductionOrder IsItemSelected() {
+            if (dataGrid.SelectedItem == null) {
                 Alerts.ShowMessage("Selectati o comanda!");
-                return false;
+                return null;
             }
 
-            return true;
+            return dataGrid.SelectedItem as ProductionOrder;
         }
 
         /// <summary>
@@ -176,18 +183,16 @@ namespace MPG_Interface.Module.Interfaces {
         /// </summary>
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task BlockCommand() {
-            if (!IsItemSelected()) {
-                return;
-            }
-
+            ProductionOrder po;
             if (!Alerts.ConfirmMessage("Sigur doriti sa blocati comanda?")) {
                 return;
             }
 
-            DataGridCellInfo cellInfo = dataGrid.SelectedCells[9];
-            string poid = ((ProductionOrder)cellInfo.Item).POID;
+            if ((po = IsItemSelected()) == null) {
+                return;
+            }
 
-            bool response = await RestClient.Client.BlockCommand(poid);
+            bool response = await RestClient.Client.BlockCommand(po.POID);
             if (!response) {
                 Alerts.ShowMessage("Comanda nu a fost blocata!");
             } else {
@@ -197,36 +202,35 @@ namespace MPG_Interface.Module.Interfaces {
 
         /// <summary>
         /// Show the window used to set the quality control for a command
-        /// TODO: CHeck this function
         /// </summary>
         public async Task ShowQualityWindow() {
-            if (!IsItemSelected()) {
+            ProductionOrder po;
+            if ((po = IsItemSelected()) == null) {
                 return;
             }
 
-            DataGridCellInfo cellInfo = dataGrid.SelectedCells[9];
-            string poid = ((ProductionOrder)cellInfo.Item).POID;
+            string poid = po.POID;
+            int quantity = decimal.ToInt32((int)po.PlannedQtyBUC);
             string qc = await RestClient.Client.GetQC(poid);
 
-            new DetailsWindow(qc, poid) { Owner = Application.Current.MainWindow }.ShowDialog();
+            _ = new DetailsWindow(qc, poid, quantity) { Owner = Application.Current.MainWindow }.ShowDialog();
         }
 
         /// <summary>
-        /// Sends the selected command to execution
-        /// TODO: Check This function
+        /// Sends the command to production
         /// </summary>
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task SendCommandToProduction() {
-            if (!IsItemSelected()) {
+            ProductionOrder po;
+            if ((po = IsItemSelected()) == null) {
                 return;
             }
 
-            DataGridCellInfo cell = dataGrid.SelectedCells[9];
-            string poid = ((ProductionOrder)cell.Item).POID;
+            StartCommand command = StartCommand.GetCommand(po.POID);
+            command.Priority = int.Parse(po.Priority, CultureInfo.InvariantCulture);
 
-            if (await RestClient.Client.StartCommand(poid)) {
-                Alerts.ShowMessage("Comanda a fost transmisa!");
-            }
+            string message = await RestClient.Client.StartCommand(command);
+            Alerts.ShowMessage(message);
         }
 
         /// <summary>
@@ -234,10 +238,11 @@ namespace MPG_Interface.Module.Interfaces {
         /// </summary>
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task GetCommands() {
-            oldList = await RestClient.Client.GetCommands(start.SelectedDate.Value, end.SelectedDate.Value);
-
+            var period = FactoryData.CreatePeriod(start.SelectedDate.Value, end.SelectedDate.Value);
+            oldList = await RestClient.Client.GetCommands(period);
             dataGrid.ItemsSource = oldList;
-            if (oldList.Count == 0) {
+
+            if (oldList?.Count == 0) {
                 Alerts.ShowMessage("Nu exista comenzi in perioada selectata");
             }
         }
@@ -247,8 +252,9 @@ namespace MPG_Interface.Module.Interfaces {
         /// </summary>
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task UpdateMaterials() {
-            if (await RestClient.Client.DownloadMaterials()) {
-                Alerts.ShowMessage("Materialele au fost descarcate");
+            string message = await RestClient.Client.DownloadMaterials();
+            if (!string.IsNullOrEmpty(message)) {
+                Alerts.ShowMessage(message);
             }
         }
     }

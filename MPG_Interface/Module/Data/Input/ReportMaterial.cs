@@ -1,4 +1,4 @@
-﻿namespace MPG_Interface.Module.Data {
+﻿namespace MPG_Interface.Module.Data.Input {
 
     public record ReportMaterial {
 

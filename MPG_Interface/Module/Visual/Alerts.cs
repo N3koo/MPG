@@ -6,13 +6,6 @@ namespace MPG_Interface.Module.Visual {
     public class Alerts {
 
         /// <summary>
-        /// Event for showing or hiding the loading window
-        /// </summary>
-        private static readonly Action<bool, string> _showLoading = (bool status, string title) => {
-            Application.Current.MainWindow.IsEnabled = status;
-        };
-
-        /// <summary>
         /// 
         /// </summary>
         private static readonly Func<string, bool> _showMessageBox = (string message) => {
@@ -38,17 +31,8 @@ namespace MPG_Interface.Module.Visual {
             return MessageBox.Show(Application.Current.MainWindow, message, "", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         }
 
-        public static void ShowLoading() {
-            _ = Application.Current.Dispatcher.Invoke(_showLoading, false, "Asteptati descarcarea materialelor");
-        }
-
-        public static void HideLoading() {
-            _ = Application.Current.Dispatcher.Invoke(_showLoading, true, null);
-        }
-
         public static bool ConfirmMessageThread(string message) {
             return (bool)Application.Current.Dispatcher.Invoke(_showMessageBox, message);
         }
-
     }
 }

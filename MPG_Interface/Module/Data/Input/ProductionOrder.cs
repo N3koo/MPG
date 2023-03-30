@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace MPG_Interface.Module.Data {
+namespace MPG_Interface.Module.Data.Input {
 
-    public record ProductionOrder {
+    public class ProductionOrder {
 
         public string PODescription { get; init; }
 
@@ -22,7 +22,7 @@ namespace MPG_Interface.Module.Data {
 
         public string ProfitCenter { get; init; }
 
-        public string Priority { get; init; }
+        public string Priority { get; set; }
 
         public DateTime PlannedStartDate { get; init; }
 

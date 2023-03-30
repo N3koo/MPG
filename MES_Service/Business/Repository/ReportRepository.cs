@@ -1,5 +1,6 @@
 ﻿using NHibernate.Transform;
 
+using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Data.Extension;
 using MpgWebService.DTO;
@@ -11,7 +12,6 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using System;
 
 namespace MpgWebService.Repository {
 
@@ -25,12 +25,12 @@ namespace MpgWebService.Repository {
                 "FROM MPG2MES_ProductionOrderConsumptions pc LEFT JOIN MES2MPG_MaterialData md ON pc.Item = md.MaterialID " +
                 "WHERE pc.POID = ? AND pc.PailNumber = ? GROUP BY pc.Item;";
 
-        public Task<List<ReportCommand>> GetReport(DateTime start, DateTime end) {
+        public Task<List<ReportCommand>> GetReport(Period period) {
             List<ReportCommand> dtos = new();
 
             using var session = SqliteDB.Instance.GetSession();
             using var transaction = session.BeginTransaction();
-            var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= start && p.PlannedEndDate <= end).ToList();
+            var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
 
             if (result.Count == 0) {
                 return Task.FromResult(dtos);

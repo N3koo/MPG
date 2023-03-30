@@ -1,10 +1,10 @@
-﻿using MPG_Interface.Module.Visual;
+﻿using MPG_Interface.Module.Data.Output;
+using MPG_Interface.Module.Visual;
 
 using System.Collections.Generic;
 using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows;
-using System;
 
 namespace MPG_Interface.Xaml {
 
@@ -14,23 +14,19 @@ namespace MPG_Interface.Xaml {
 
         private CheckBox qcAll;
 
-        private bool[] local;
+        StartCommand command;
 
-        private bool[] original;
-
-        private string poid;
-
-        public DetailsWindow(string qc, string poid) {
+        public DetailsWindow(string qc, string poid, int quantity) {
             InitializeComponent();
 
-            SetCommandDetails(qc, poid);
+            SetCommandDetails(qc, poid, quantity);
         }
 
-        private void SetCommandDetails(string qc, string poid) {
-            this.poid = poid;
+        private void SetCommandDetails(string qc, string poid, int quantity) {
+            command = StartCommand.CreateCommand(poid, qc, quantity);
 
             CreateRows();
-            SetDetails(qc);
+            SetDetails();
             SetEvents();
         }
 
@@ -67,12 +63,15 @@ namespace MPG_Interface.Xaml {
             CurrentRow.Cells.Add(new TableCell(new BlockUIContainer(panel)));
         }
 
-        private void SetDetails(string qc) {
-            for (int i = 0; i < 18; i++) {
-                DetailElement element = new(true, i + 1, poid);
+        private void SetDetails() {
+            /*local = new bool[quantity];
+            original = new bool[quantity];
+
+            for (int i = 0; i < original.Length; i++) {
+                DetailElement element = new(local[i], i + 1, command.POID);
                 listElements.Add(element);
                 tbDetails.RowGroups[0].Rows.Add(element);
-            }
+            }/**/
         }
 
         private void SetEvents() {
@@ -81,7 +80,6 @@ namespace MPG_Interface.Xaml {
                 /*for (int i = 0; i < size; i++) {
                     local[i] = listElements[i].GetStatus();
                 }/**/
-                //InputDataCollection.SetQC(_local, _poid);
 
                 Close();
             };

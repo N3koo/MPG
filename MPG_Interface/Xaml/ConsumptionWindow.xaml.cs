@@ -2,8 +2,8 @@
 using System.Windows.Controls;
 using System.Windows;
 
+using MPG_Interface.Module.Data.Input;
 using MPG_Interface.Module.Controller;
-using MPG_Interface.Module.Data;
 
 namespace MPG_Interface.Xaml {
 

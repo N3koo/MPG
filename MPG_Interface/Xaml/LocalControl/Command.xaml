@@ -81,7 +81,7 @@
                 <DataGridTextColumn Header="UOM" Binding="{Binding PlannedQtyBUCUom}" IsReadOnly="True" Width="Auto"/>
                 <DataGridTextColumn Header="Kober Lot" Binding="{Binding KoberLot}" IsReadOnly="True" Width="Auto"/>
                 <DataGridTextColumn Header="Profit Center" Binding="{Binding ProfitCenter, Converter={StaticResource removeZero}}" IsReadOnly="True" Width="Auto"/>
-                <DataGridTextColumn Header="Prioritate" Binding="{Binding Priority}" IsReadOnly="False" Width="Auto"/>
+                <DataGridTextColumn Header="Prioritate" Binding="{Binding Priority }" IsReadOnly="False" Width="Auto"/>
                 <DataGridTextColumn Header="Data Inceput" Binding="{Binding PlannedStartDate}" IsReadOnly="True" Width="Auto"/>
                 <DataGridTextColumn Header="Ora Inceput" Binding="{Binding PlannedStartHour}" IsReadOnly="True" Width="Auto"/>
                 <DataGridTextColumn Header="Data Sfarsit" Binding="{Binding PlannedEndDate}" IsReadOnly="True" Width="Auto"/>

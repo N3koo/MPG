@@ -117,34 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Consumption_Type" xml:space="preserve">
+  <data name="CMD_BLOCKED" xml:space="preserve">
+    <value>BLOC</value>
+  </data>
+  <data name="CMD_DONE" xml:space="preserve">
+    <value>PRLT</value>
+  </data>
+  <data name="CMD_ERROR" xml:space="preserve">
+    <value>PRLI</value>
+  </data>
+  <data name="CMD_SEND" xml:space="preserve">
+    <value>ELB</value>
+  </data>
+  <data name="CMD_STARTED" xml:space="preserve">
+    <value>PRLS</value>
+  </data>
+  <data name="CONSUMPTION_TYPE" xml:space="preserve">
     <value>261</value>
   </data>
-  <data name="Goods_Receipt_Type" xml:space="preserve">
+  <data name="MAXIMUM_DOSAGE_TIME" xml:space="preserve">
+    <value>30</value>
+  </data>
+  <data name="RECEIPT_TYPE" xml:space="preserve">
     <value>101</value>
-  </data>
-  <data name="MES_Database" xml:space="preserve">
-    <value>MPGINTERFACE</value>
-  </data>
-  <data name="MES_Pass" xml:space="preserve">
-    <value>Kober2019!@#</value>
-  </data>
-  <data name="MES_Server" xml:space="preserve">
-    <value>192.168.10.14</value>
-  </data>
-  <data name="MES_User" xml:space="preserve">
-    <value>MPG</value>
-  </data>
-  <data name="Path_Sqlite" xml:space="preserve">
-    <value>E:\Work\C#\Local.sqlite</value>
-  </data>
-  <data name="SAP_Pass" xml:space="preserve">
-    <value>MES_2022</value>
-  </data>
-  <data name="SAP_Server" xml:space="preserve">
-    <value>http://DEZV-ECC.kober.ro:8000/sap/bc/srt/rfc/sap/z_mpg/200/z_mpg/z_mpg</value>
-  </data>
-  <data name="SAP_User" xml:space="preserve">
-    <value>USERMES</value>
   </data>
 </root>

@@ -1,12 +1,13 @@
-﻿using MpgWebService.Repository.Interface;
+﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Presentation.Request;
+using MpgWebService.Business.Service;
 using MpgWebService.DTO;
+
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
 
 namespace MpgWebService.Presentation.Controllers {
 
@@ -14,15 +15,15 @@ namespace MpgWebService.Presentation.Controllers {
     [ApiController]
     public class ProductionController : ControllerBase {
 
-        private readonly IProductionRepository repository;
+        private readonly IProductionService service;
 
-        public ProductionController(IProductionRepository repository) {
-            this.repository = repository;
+        public ProductionController() {
+            service = new ProductionService();
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Production>> GetResult([Required] DateTime start, [Required] DateTime end) {
-            return await repository.CheckProductionStatus(start, end);
+        public async Task<IEnumerable<Production>> GetResult([FromQuery] Period period) {
+            return await service.GetProductionStatus(period);
         }
     }
 }
