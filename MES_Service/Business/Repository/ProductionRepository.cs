@@ -18,7 +18,7 @@ namespace MpgWebService.Repository {
         public Task<List<Production>> CheckProductionStatus(Period period) {
             List<Production> dtos = new();
 
-            using var session = SqliteDB.Instance.GetSession();
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
             var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
 

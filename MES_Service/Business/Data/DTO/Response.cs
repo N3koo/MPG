@@ -1,4 +1,4 @@
-﻿using System;
+﻿using MpgWebService.Business.Data.Exceptions;
 
 namespace MpgWebService.Business.Data.DTO {
 
@@ -13,6 +13,25 @@ namespace MpgWebService.Business.Data.DTO {
         public string Message { set; get; }
         public bool Status { set; get; }
         public ServerType Type { set; get; }
+
+        public void CheckErrors() {
+            if (Status) {
+                return;
+            }
+
+            switch (Type) {
+                case ServerType.Mes:
+                    throw new MesException(Message);
+                case ServerType.Mpg:
+                    throw new MpgException(Message);
+                case ServerType.Sap:
+                    throw new SapException(Message);
+            }
+        }
+
+        public void AddError(string message) {
+            Message = $"{Message}\n{message}";
+        }
 
         public static Response CreateErrorSap(string message) => new() {
             Message = message,

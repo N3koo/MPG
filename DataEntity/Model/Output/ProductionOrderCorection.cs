@@ -41,10 +41,10 @@ namespace DataEntity.Model.Output {
         public virtual string Item_10 { set; get; }
         public virtual double ItemQty_10 { set; get; }
         public virtual string ItemUom_10 { set; get; }
-        public virtual int MPGStatus { set; get; }
-        public virtual int MESStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
+        public virtual int? MESStatus { set; get; }
         public virtual string ErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
 
     }
 

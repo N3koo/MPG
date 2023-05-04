@@ -1,5 +1,7 @@
 ﻿using MpgWebService.Presentation.Request;
+using MpgWebService.Business.Data.DTO;
 using MpgWebService.Properties;
+
 using DataEntity.Model.Output;
 using DataEntity.Model.Input;
 using DataEntity.Model.Types;
@@ -8,8 +10,6 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using MpgWebService.Business.Data.DTO;
-using System.Diagnostics;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -17,37 +17,96 @@ namespace MpgWebService.Repository.Clients {
 
         public readonly static MpgClient Client = new();
 
-        public List<ProductionOrder> GetCommands(Period period) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public List<ProductionOrder> GetCommands(Period period) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
-        });
+        }
 
-        public ProductionOrder GetCommand(string POID) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public void SaveCorrection(ProductionOrderCorection correction) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            session.Save(correction);
+            transaction.Commit();
+        }
+
+        public ProductionOrderPailStatus GetAvailablePail() {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            throw new NotImplementedException();
+
+        }
+
+        public void ConsumeMaterials(List<POConsumption> materials) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            materials.ForEach(item => {
+                session.Save(POConsumption.CreateConsumption(item));
+            });
+
+            transaction.Commit();
+        }
+
+        public List<LotDetails> GetOperations(string POID) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            return session.Query<ProductionOrderLotDetail>().Where(p => p.POID == POID).OrderBy(p => p.OpNo)
+                .GroupBy(p => new { p.OpNo, p.OpDescr })
+                .Select(p => new LotDetails { OPNO = p.Key.OpNo, OpDescr = p.Key.OpDescr }).ToList();
+        }
+
+        public void SaveDosageMaterials(List<ProductionOrderConsumption> consumption) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            consumption.ForEach(item => {
+                session.Save(item);
+            });
+
+            transaction.Commit();
+        }
+
+        public ProductionOrder GetCommand(string POID) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             return session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
-        });
+        }
 
 
-        public bool CheckPriority(string priority) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public bool CheckPriority(string priority) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrder>().Any(p => p.Priority == priority);
-        });
+            return !session.Query<ProductionOrder>().Any(p => p.Priority == priority);
+        }
 
-        public string GetQc(string POID) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public string GetQc(string POID) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             return session.Query<ProductionOrderLotHeader>().FirstOrDefault(p => p.POID == POID)?.PozQC;
-        });
+        }
 
-        public int BlockCommand(string POID) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public List<ProductionOrderBom> GetMaterials(string POID) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            var quantity = session.Query<ProductionOrder>().First(p => p.POID == POID).PlannedQtyBUC;
+            var materials = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
+            materials.ForEach(item => item.ItemQty /= quantity);
+
+            return materials;
+        }
+
+
+        public int BlockCommand(string POID) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var po = session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
@@ -62,38 +121,44 @@ namespace MpgWebService.Repository.Clients {
             }
 
             po.Status = Resources.CMD_BLOCKED;
+            po.Priority = "-1";
+            po.MPGStatus = 1;
+            po.MPGRowUpdated = DateTime.Now;
 
             session.Update(po);
             transaction.Commit();
 
             return 0;
-        });
+        }
 
-        public Response CreateCommand(ProductionOrder po) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public Response CreateCommand(ProductionOrder po) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
+
+            po.Priority = "-1";
 
             session.Save(po);
             transaction.Commit();
 
             return Response.CreateOkResponse("Comanda a fost salvata");
-        });
+        }
 
-        public Response CloseCommand(string POID) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public Response CloseCommand(string POID) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var result = session.Query<ProductionOrder>().First(p => p.POID == POID);
             result.Status = Resources.CMD_DONE;
+            result.Priority = "-1";
 
             session.Update(result);
             transaction.Commit();
 
             return Response.CreateOkResponse("Comanda a fost inchisa");
-        });
+        }
 
-        public Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> PartialMaterials(string POID) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> PartialMaterials(string POID) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var po = session.Query<ProductionOrder>().First(p => p.POID == POID);
@@ -101,10 +166,10 @@ namespace MpgWebService.Repository.Clients {
             var position = session.Query<ProductionOrderFinalItem>().First(p => p.POID == POID).ItemPosition;
             var ldm = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
             return Tuple.Create(po, pails, ldm, position);
-        });
+        }
 
-        public Response UpdateTickets(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public Response UpdateTickets(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             tuple.Item2.ForEach(pail => {
@@ -114,12 +179,12 @@ namespace MpgWebService.Repository.Clients {
             transaction.Commit();
 
             return Response.CreateOkResponse("Materialele au fost actulizate");
-        });
+        }
 
-        public Response StartCommand(Tuple<InputData, List<ProductionOrderPailStatus>> data) => CatchException(() => {
+        public void StartCommand(Tuple<InputData, List<ProductionOrderPailStatus>> data) {
             var po = data.Item1;
 
-            using var session = SqliteDB.Instance.GetSession();
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             session.Save(po.Order);
@@ -134,16 +199,14 @@ namespace MpgWebService.Repository.Clients {
             });
 
             transaction.Commit();
+        }
 
-            return Response.CreateOkResponse("Comanda a fost creata");
-        });
-
-        public Response SaveOrUpdateMaterials(Tuple<List<AlternativeName>, List<MaterialData>, List<Clasification>> tuple) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public Response SaveOrUpdateMaterials(Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>> tuple) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             tuple.Item1.ForEach(name => {
-                var localName = session.Query<AlternativeName>().FirstOrDefault(p => p.MaterialID == name.MaterialID);
+                var localName = session.Query<AlternativeName>().FirstOrDefault(p => p.MaterialID == name.MaterialID && p.Language == name.Language);
 
                 if (localName == null) {
                     _ = session.Save(name);
@@ -165,13 +228,14 @@ namespace MpgWebService.Repository.Clients {
             });
 
 
-            tuple.Item3.ForEach(clasification => {
-                var localClasification = session.Query<Clasification>().FirstOrDefault(p => p.MaterialID == clasification.MaterialID);
+            tuple.Item3.ForEach(classification => {
+                var localClasification = session.Query<Classification>().FirstOrDefault(p => p.MaterialID == classification.MaterialID &&
+                        p.Param == classification.Param && p.Value == classification.Value);
 
                 if (localClasification == null) {
-                    _ = session.Save(clasification);
+                    _ = session.Save(classification);
                 } else {
-                    localClasification.SetDetails(clasification);
+                    localClasification.SetDetails(classification);
                     session.Update(localClasification);
                 }
             });
@@ -179,10 +243,10 @@ namespace MpgWebService.Repository.Clients {
             transaction.Commit();
 
             return Response.CreateOkResponse("Materialele au fost actualizate");
-        });
+        }
 
-        public Response SaveOrUpdateRiskPhrases(List<RiskPhrase> phrases) => CatchException(() => {
-            using var session = SqliteDB.Instance.GetSession();
+        public void SaveOrUpdateRiskPhrases(List<RiskPhrase> phrases) {
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             phrases.ForEach(item => {
@@ -197,19 +261,35 @@ namespace MpgWebService.Repository.Clients {
             });
 
             transaction.Commit();
+        }
 
-            return Response.CreateOkResponse("Frazele de risc au fost actualizate");
-        });
+        public void SaveOrUpdateStockVesel(List<StockVessel> vessels) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
 
-        private T CatchException<T>(Func<T> function) {
-            /*try {
-                return function();
-            } catch (Exception ex) {
-                Debug.WriteLine(ex.Message);
-            }
+            vessels.ForEach(vessel => {
+                var local = session.Query<StockVessel>().FirstOrDefault(p => p.MaterialID == vessel.MaterialID);
 
-            return default;/**/
-            return function();
+                if (local == null) {
+                    session.Save(vessel);
+                } else {
+                    local.SetDetails(vessel);
+                    session.Update(local);
+                }
+            });
+
+            transaction.Commit();
+        }
+
+        public void ChangeStatus(string POID, string pailIndex, string status) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            var pail = session.Query<ProductionOrderPailStatus>().First(p => p.POID == POID && p.PailNumber == pailIndex);
+            pail.PailStatus = status;
+
+            session.Update(pail);
+            transaction.Commit();
         }
     }
 }

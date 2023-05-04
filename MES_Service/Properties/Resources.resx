@@ -126,6 +126,9 @@
   <data name="CMD_ERROR" xml:space="preserve">
     <value>PRLI</value>
   </data>
+  <data name="CMD_QC" xml:space="preserve">
+    <value>PRLQ</value>
+  </data>
   <data name="CMD_SEND" xml:space="preserve">
     <value>ELB</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="MAXIMUM_DOSAGE_TIME" xml:space="preserve">
     <value>30</value>
+  </data>
+  <data name="PLANT" xml:space="preserve">
+    <value>1000</value>
   </data>
   <data name="RECEIPT_TYPE" xml:space="preserve">
     <value>101</value>

@@ -192,60 +192,57 @@ namespace MPG_Interface.Module.Logic {
             return false;
         });
 
-        public Task<bool> BlockCommand(string POID) => CheckException(async () => {
+        public Task<string> BlockCommand(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
-            bool result = false;
+            string result = string.Empty;
             string address = $"Command/Block/{POID}";
 
             HttpResponseMessage response = await client.DeleteAsync(address);
             string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                result = JsonSerializer.Deserialize<bool>(data);
+                result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowMessage(data);
             }
 
             EndCall?.Invoke();
             return result;
         });
 
-        public Task<bool> CloseCommand(string POID) => CheckException(async () => {
+        public Task<string> CloseCommand(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
-            bool result = false;
+            string result = string.Empty;
             string address = $"Command/Close/{POID}";
 
             HttpResponseMessage response = await client.PutAsync(address, null);
             string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                result = JsonSerializer.Deserialize<bool>(data);
+                result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowMessage(data);
             }
 
             EndCall?.Invoke();
             return result;
         });
 
-        public Task<bool> PartialProduction(string POID) => CheckException(async () => {
+        public Task<string> PartialProduction(string POID) => CheckException(async () => {
             StartCall?.Invoke();
 
-            bool result = false;
+            string result = string.Empty;
             string address = $"Command/Partial/{POID}";
 
             HttpResponseMessage response = await client.PutAsync(address, null);
             string data = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                result = JsonSerializer.Deserialize<bool>(data);
+                result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowMessage(data);
             }
 
             EndCall?.Invoke();
@@ -264,8 +261,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowMessage(data);
             }
 
             EndCall?.Invoke();

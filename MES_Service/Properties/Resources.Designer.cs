@@ -88,6 +88,15 @@ namespace MpgWebService.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PRLQ.
+        /// </summary>
+        internal static string CMD_QC {
+            get {
+                return ResourceManager.GetString("CMD_QC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ELB.
         /// </summary>
         internal static string CMD_SEND {
@@ -120,6 +129,15 @@ namespace MpgWebService.Properties {
         internal static string MAXIMUM_DOSAGE_TIME {
             get {
                 return ResourceManager.GetString("MAXIMUM_DOSAGE_TIME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1000.
+        /// </summary>
+        internal static string PLANT {
+            get {
+                return ResourceManager.GetString("PLANT", resourceCulture);
             }
         }
         

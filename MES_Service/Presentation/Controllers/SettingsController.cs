@@ -1,6 +1,6 @@
 ﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Presentation.Request;
 using MpgWebService.Business.Service;
-using MpgWebService.DTO;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace MpgWebService.Presentation.Controllers {
     [ApiController]
     [Route("[controller]")]
+    [Produces("text/json")]
     public class SettingsController : ControllerBase {
 
         private readonly ISettingsService service;

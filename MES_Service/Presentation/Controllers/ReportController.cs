@@ -10,8 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MpgWebService.Presentation.Controllers {
 
-    [Route("[controller]")]
     [ApiController]
+    [Route("[controller]")]
+    [Produces("text/json")]
     public class ReportController : ControllerBase {
 
         private readonly IReportService repository;

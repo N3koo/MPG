@@ -3,7 +3,6 @@
 using SAPServices;
 
 using System;
-using System.Data.SqlTypes;
 
 namespace DataEntity.Model.Input {
 
@@ -14,7 +13,7 @@ namespace DataEntity.Model.Input {
         public virtual string PODescription { set; get; }
         public virtual string MaterialID { set; get; }
         public virtual string PlantID { set; get; }
-        public virtual decimal PlannedQtyBUC { set; get; }
+        public virtual int PlannedQtyBUC { set; get; }
         public virtual string PlannedQtyBUCUom { set; get; }
         public virtual DateTime PlannedStartDate { set; get; }
         public virtual string PlannedStartHour { set; get; }
@@ -35,6 +34,8 @@ namespace DataEntity.Model.Input {
         public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
         public virtual DateTime? MPGRowUpdated { set; get; }
+        public virtual string CustomerName { set; get; }
+        public virtual string CustomerCode { set; get; }
 
         public ProductionOrder() {
 
@@ -123,6 +124,8 @@ namespace DataEntity.Model.Input {
             _ = Map(x => x.MPGStatus).Nullable();
             _ = Map(x => x.MPGErrorMessage).Nullable();
             _ = Map(x => x.MPGRowUpdated).Nullable();
+            _ = Map(x => x.CustomerName).Nullable();
+            _ = Map(x => x.CustomerCode).Nullable();
         }
     }
 }

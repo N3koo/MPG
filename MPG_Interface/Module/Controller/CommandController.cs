@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Windows;
 using System.Linq;
-using System.Collections.ObjectModel;
 
 namespace MPG_Interface.Module.Interfaces {
 
@@ -74,14 +73,13 @@ namespace MPG_Interface.Module.Interfaces {
                     return;
                 }
 
-                if (!await RestClient.Client.CheckPriority(priority)) {
-                    await CreateQC(order);
-
+                if (await RestClient.Client.CheckPriority(priority) && await CreateQC(order)) {
                     Alerts.ShowMessage("Prioritatea a fost setata");
-                } else {
-                    ResetDataGrid(order);
-                    Alerts.ShowMessage("Prioritatea nu a putut fi setata");
+                    return;
                 }
+
+                ResetDataGrid(order);
+                Alerts.ShowMessage("Prioritatea nu a putut fi setata");
             };
 
             dataGrid.PreparingCellForEdit += (sender, args) => {
@@ -89,7 +87,7 @@ namespace MPG_Interface.Module.Interfaces {
                 ProductionOrder order = (ProductionOrder)cellInfo.Item;
 
                 // Check is the command is done or blocked
-                if (order.Status != "ELB") {
+                if (order.Status is not "ELB") {
                     Alerts.ShowMessage("Nu se mai poate seta prioritatea");
                     _ = dataGrid.CancelEdit();
                 }
@@ -122,9 +120,10 @@ namespace MPG_Interface.Module.Interfaces {
             dataGrid.ItemsSource = oldList;
         }
 
-        private async Task CreateQC(ProductionOrder order) {
+        private async Task<bool> CreateQC(ProductionOrder order) {
             string qc = await RestClient.Client.GetQC(order.POID);
             _ = StartCommand.CreateCommand(order.POID, qc, (int)order.PlannedQtyBUC);
+            return qc != null;
         }
 
         /// <summary>
@@ -145,9 +144,22 @@ namespace MPG_Interface.Module.Interfaces {
                 return;
             }
 
-            if (await RestClient.Client.CloseCommand(po.POID)) {
-                Alerts.ShowMessage("Commanda inchisa");
+            if (po.Status is not "PRLS") {
+                Alerts.ShowMessage("Comanda nu poate fi inchisa");
+                return;
             }
+
+            if (!Alerts.ConfirmMessage("Sigur vreti sa inchideti comanda?")) {
+                return;
+            }
+
+            string message = await RestClient.Client.CloseCommand(po.POID);
+            if (string.IsNullOrEmpty(message)) {
+                return;
+            }
+
+            UpdateStatus(po, "PRLT", "-1");
+            Alerts.ShowMessage(message);
         }
 
         /// <summary>
@@ -160,9 +172,17 @@ namespace MPG_Interface.Module.Interfaces {
                 return;
             }
 
-            if (await RestClient.Client.PartialProduction(po.POID)) {
-                Alerts.ShowMessage("");
+            if (po.Status is not "PRLS") {
+                Alerts.ShowMessage("Nu se poate face predare partiala");
+                return;
             }
+
+            string message = await RestClient.Client.PartialProduction(po.POID);
+            if (string.IsNullOrEmpty(message)) {
+                return;
+            }
+
+            Alerts.ShowMessage(message);
         }
 
         /// <summary>
@@ -184,20 +204,21 @@ namespace MPG_Interface.Module.Interfaces {
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task BlockCommand() {
             ProductionOrder po;
-            if (!Alerts.ConfirmMessage("Sigur doriti sa blocati comanda?")) {
-                return;
-            }
-
             if ((po = IsItemSelected()) == null) {
                 return;
             }
 
-            bool response = await RestClient.Client.BlockCommand(po.POID);
-            if (!response) {
-                Alerts.ShowMessage("Comanda nu a fost blocata!");
-            } else {
-                Alerts.ShowMessage("Comanda a fost blocata");
+            if (!Alerts.ConfirmMessage("Sigur doriti sa blocati comanda?")) {
+                return;
             }
+
+            string message = await RestClient.Client.BlockCommand(po.POID);
+            if (string.IsNullOrEmpty(message)) {
+                return;
+            }
+
+            UpdateStatus(po, "BLOC", "-1");
+            Alerts.ShowMessage(message);
         }
 
         /// <summary>
@@ -226,10 +247,20 @@ namespace MPG_Interface.Module.Interfaces {
                 return;
             }
 
+            if (po.Status != "ELB") {
+                Alerts.ShowMessage("Comanda a fost deja transmisa");
+                return;
+            }
+
             StartCommand command = StartCommand.GetCommand(po.POID);
             command.Priority = int.Parse(po.Priority, CultureInfo.InvariantCulture);
 
             string message = await RestClient.Client.StartCommand(command);
+            if (string.IsNullOrEmpty(message)) {
+                return;
+            }
+
+            UpdateStatus(po, "PRLS", po.Priority);
             Alerts.ShowMessage(message);
         }
 
@@ -256,6 +287,13 @@ namespace MPG_Interface.Module.Interfaces {
             if (!string.IsNullOrEmpty(message)) {
                 Alerts.ShowMessage(message);
             }
+        }
+
+        private void UpdateStatus(ProductionOrder po, string status, string priority) {
+            po.Status = status;
+            po.Priority = priority;
+            dataGrid.ItemsSource = null;
+            dataGrid.ItemsSource = oldList;
         }
     }
 }

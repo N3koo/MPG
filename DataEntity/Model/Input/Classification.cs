@@ -7,25 +7,22 @@ using System;
 namespace DataEntity.Model.Input {
 
     /// <summary>
-    /// Saves the clasificiations for the materials
+    /// Saves the classifications for the materials
     /// </summary>
-    public class Clasification {
+    public class Classification {
 
         public virtual string MaterialID { set; get; }
         public virtual string Class { set; get; }
         public virtual string Param { set; get; }
         public virtual string ParamDescr { set; get; }
         public virtual string Value { set; get; }
-        public virtual string ValueDescr { set; get; }
-        public virtual int MESStatus { set; get; }
-        public virtual int? MPGStatus { set; get; }
-        public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime? MPGRowUpdated { set; get; }
+        //public virtual string ValueDescr { set; get; }
+
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public Clasification() {
+        public Classification() {
 
         }
 
@@ -33,13 +30,13 @@ namespace DataEntity.Model.Input {
         /// Constructor for SAP data
         /// </summary>
         /// <param name="data">Data from the SAP</param>
-        public Clasification(ZCLASIFICATION data) {
+        public Classification(ZCLASIFICATION data) {
             MaterialID = data.MATERIALID;
             Class = data.CLASS;
             Param = data.PARAM;
             ParamDescr = data.PARAMDESCR;
             Value = data.VALUE;
-            ValueDescr = data.VALUEDESCR;
+            //ValueDescr = data.VALUEDESCR;
         }
 
         /// <summary>
@@ -48,7 +45,7 @@ namespace DataEntity.Model.Input {
         /// <param name="obj">Reference to the object</param>
         /// <returns></returns>
         public override bool Equals(object obj) {
-            if (obj is not Clasification other) return false;
+            if (obj is not Classification other) return false;
             if (ReferenceEquals(this, other)) return true;
 
             return MaterialID == other.MaterialID && Param == other.Param && Value == other.Value;
@@ -57,7 +54,7 @@ namespace DataEntity.Model.Input {
         /// <summary>
         /// Used to override the function
         /// </summary>
-        /// <returns>Hashcode for the needed fields</returns>
+        /// <returns>Hash code for the needed fields</returns>
         public override int GetHashCode() {
             return HashCode.Combine(MaterialID, Param, Value);
         }
@@ -75,32 +72,28 @@ namespace DataEntity.Model.Input {
         /// Setting the details
         /// </summary>
         /// <param name="clasification"></param>
-        public virtual void SetDetails(Clasification clasification) {
+        public virtual void SetDetails(Classification clasification) {
             Class = clasification.Class;
             ParamDescr = clasification.ParamDescr;
         }
     }
 
     /// <summary>
-    /// Mapping the clasification class
+    /// Mapping the classification class
     /// </summary>
-    public class ClasificationMap : ClassMap<Clasification> {
+    public class ClassificationMap : ClassMap<Classification> {
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ClasificationMap() {
-            Table("MES2MPG_MaterialDataClasification");
+        public ClassificationMap() {
+            Table("MES2MPG_MaterialDataClassifications");
 
             _ = CompositeId().KeyProperty(x => x.MaterialID).KeyProperty(x => x.Param).KeyProperty(x => x.Value);
 
             _ = Map(x => x.Class).Nullable();
             _ = Map(x => x.ParamDescr).Nullable();
-            _ = Map(x => x.ValueDescr).Nullable();
-            _ = Map(x => x.MESStatus).Nullable();
-            _ = Map(x => x.MPGStatus).Nullable();
-            _ = Map(x => x.MPGErrorMessage).Nullable();
-            _ = Map(x => x.MPGRowUpdated).Nullable();
+            //_ = Map(x => x.ValueDescr).Nullable();
         }
     }
 }

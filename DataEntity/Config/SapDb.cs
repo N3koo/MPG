@@ -51,7 +51,7 @@ namespace DataEntity.Config {
         }
 
         /// <summary>
-        /// Desctructor that closes the connection of the client
+        /// Destructor that closes the connection of the client
         /// </summary>
         ~SapDb() {
             if (_client != null) {

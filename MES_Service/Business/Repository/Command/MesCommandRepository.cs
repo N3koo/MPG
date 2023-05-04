@@ -2,20 +2,19 @@
 using MpgWebService.Repository.Interface;
 using MpgWebService.Business.Data.DTO;
 using MpgWebService.Repository.Clients;
+using MpgWebService.Properties;
 
 using DataEntity.Model.Input;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
-namespace MpgWebService.Repository {
+namespace MpgWebService.Repository.Command {
 
     public class MesCommandRepository : ICommandRepository {
 
-        private readonly MesClient mesClient;
-
         public MesCommandRepository() {
-            mesClient = new();
         }
 
         public Task<Response> BlockCommand(string POID) {
@@ -24,12 +23,12 @@ namespace MpgWebService.Repository {
 
             switch (result) {
                 case 0:
-                    _ = mesClient.BlockCommand(POID);
+                    _ = MesClient.Client.BlockCommand(POID);
                     break;
                 case 1:
-                    return Task.FromResult(Response.CreateOkResponse("Nu se poate bloca comanda deoarece s-a inceput procesul de productie"));
+                    return Task.FromResult(Response.CreateErrorMpg("Nu se poate bloca comanda deoarece s-a inceput procesul de productie"));
                 case 2:
-                    po = mesClient.BlockCommand(POID);
+                    po = MesClient.Client.BlockCommand(POID);
                     MpgClient.Client.CreateCommand(po);
                     break;
             }
@@ -38,7 +37,7 @@ namespace MpgWebService.Repository {
         }
 
         public Task<List<ProductionOrder>> GetCommands(Period period) {
-            var orders = mesClient.GetCommands(period);
+            var orders = MesClient.Client.GetCommands(period);
             orders.AddRange(MpgClient.Client.GetCommands(period));
 
             return Task.FromResult(orders);
@@ -50,7 +49,7 @@ namespace MpgWebService.Repository {
         }
 
         public Task<Response> StartCommand(StartCommand qc) {
-            var data = mesClient.GetCommandData(qc);
+            var data = MesClient.Client.GetCommandData(qc);
 
             MpgClient.Client.StartCommand(data);
 
@@ -63,38 +62,54 @@ namespace MpgWebService.Repository {
         }
 
         public Task<string> GetQC(string POID) {
-            var result = MpgClient.Client.GetQc(POID);
+            var result = MesClient.Client.GetQc(POID);
             return Task.FromResult(result);
         }
 
         public Task<Response> CloseCommand(string POID) {
-            var result = MpgClient.Client.CloseCommand(POID);
-            return Task.FromResult(Response.CreateOkResponse(""));
+            MesClient.Client.CloseCommand(POID);
+            MpgClient.Client.CloseCommand(POID);
+
+            return Task.FromResult(Response.CreateOkResponse("Comanda a fost inchisa"));
         }
 
         public Task<Response> PartialProduction(string POID) {
-            var result = mesClient.SendPartialProduction(POID);
-            return Task.FromResult(Response.CreateOkResponse(""));
+            MesClient.Client.SendPartialProduction(POID);
+
+            return Task.FromResult(Response.CreateOkResponse("Materialele au fost predate"));
         }
 
         public Task<Response> DownloadMaterials() {
-            var result = mesClient.GetMaterials();
+            var result = MesClient.Client.GetMaterials();
+            var phrases = MesClient.Client.GetRiskPhrases();
+            var vessels = MesClient.Client.GetStockVessels();
+
             MpgClient.Client.SaveOrUpdateMaterials(result);
-
-            var phrases = mesClient.GetRiskPhrases();
             MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            MpgClient.Client.SaveOrUpdateStockVesel(vessels);
 
-            return Task.FromResult(Response.CreateOkResponse(""));
+            UpdateDate();
+
+            return Task.FromResult(Response.CreateOkResponse("Materialele au fost descarcate"));
         }
 
         public Task<Response> UpdateMaterials() {
-            var result = mesClient.GetMaterials();
+            var result = MesClient.Client.GetMaterials();
+            var phrases = MesClient.Client.GetRiskPhrases();
+            var vessels = MesClient.Client.GetStockVessels();
+
             MpgClient.Client.SaveOrUpdateMaterials(result);
-
-            var phrases = mesClient.GetRiskPhrases();
             MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            MpgClient.Client.SaveOrUpdateStockVesel(vessels);
 
-            return Task.FromResult(Response.CreateOkResponse(""));
+            UpdateDate();
+
+            return Task.FromResult(Response.CreateOkResponse("Materialele au fost actualizate"));
+        }
+
+        private void UpdateDate() {
+            Settings.Default.Update = DateTime.Now.ToString();
+            Settings.Default.Save();
         }
     }
 }

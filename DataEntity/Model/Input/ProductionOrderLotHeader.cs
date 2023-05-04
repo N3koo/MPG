@@ -51,7 +51,7 @@ namespace DataEntity.Model.Input {
             _ = Map(x => x.FinishDate).Not.Nullable();
             _ = Map(x => x.FabrInstr).Not.Nullable();
             _ = Map(x => x.FabrInstrGroup).Not.Nullable();
-            _ = Map(x => x.PozQC).Not.Nullable();
+            _ = Map(x => x.PozQC).Nullable();
         }
     }
 }

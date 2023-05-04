@@ -28,7 +28,7 @@ namespace MpgWebService.Repository {
         public Task<List<ReportCommand>> GetReport(Period period) {
             List<ReportCommand> dtos = new();
 
-            using var session = SqliteDB.Instance.GetSession();
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
             var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
 
@@ -47,7 +47,7 @@ namespace MpgWebService.Repository {
         }
 
         public Task<IList<ReportMaterial>> GetMaterialsForCommand(string POID) {
-            using var session = SqliteDB.Instance.GetSession();
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
@@ -64,7 +64,7 @@ namespace MpgWebService.Repository {
         }
 
         public Task<IList<ReportMaterial>> GetMaterialsForPail(string POID, int pail) {
-            using var session = SqliteDB.Instance.GetSession();
+            using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();

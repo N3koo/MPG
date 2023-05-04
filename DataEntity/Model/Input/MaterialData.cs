@@ -11,11 +11,11 @@ namespace DataEntity.Model.Input {
     /// </summary>
     public class MaterialData {
 
-        public virtual int ID { set; get; }
+        public virtual Int64 ID { set; get; }
         public virtual string MaterialID { set; get; }
         public virtual string Description { set; get; }
-        public virtual decimal GrossWeight { set; get; }
-        public virtual decimal NetWeight { set; get; }
+        public virtual decimal? GrossWeight { set; get; }
+        public virtual decimal? NetWeight { set; get; }
         public virtual string WeightUnit { set; get; }
         public virtual string Volume { set; get; }
         public virtual string VolumeUnit { set; get; }
@@ -34,7 +34,7 @@ namespace DataEntity.Model.Input {
         public virtual string PropDep { set; get; }
         public virtual string WareLoc { set; get; }
         public virtual string ProfitCenter { set; get; }
-        public virtual int MESStatus { set; get; }
+        public virtual int? MESStatus { set; get; }
         public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
         public virtual DateTime? MPGRowUpdated { set; get; }

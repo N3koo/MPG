@@ -1,6 +1,7 @@
 ﻿using FluentNHibernate.Mapping;
 
 using SAPServices;
+using System;
 
 namespace DataEntity.Model.Input {
 
@@ -9,12 +10,12 @@ namespace DataEntity.Model.Input {
     /// </summary>
     public class MaterialDataUOMS {
 
-        public virtual int ID { get; set; }
+        public virtual Int64 ID { get; set; }
         public virtual string MaterialID { get; set; }
         public virtual string UOM { get; set; }
         public virtual string EAN { get; set; }
-        public virtual decimal NUMERATOR { get; set; }
-        public virtual decimal DENOMINATOR { get; set; }
+        public virtual decimal? NUMERATOR { get; set; }
+        public virtual decimal? DENOMINATOR { get; set; }
         public virtual string CATEGORY { get; set; }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace DataEntity.Model.Input {
         /// Default constructor
         /// </summary>
         public MaterialAlternativeUaomsMap() {
-            Table("MES2MPG_MaterialDataAlternativeUoms");
+            Table("MES2MPG_MaterialDataAlternativeUOMS");
 
             _ = Id(x => x.ID).Not.Nullable();
             _ = Map(x => x.MaterialID).Not.Nullable();

@@ -4,19 +4,19 @@ using MpgWebService.Properties;
 using DataEntity.Model.Output;
 using DataEntity.Model.Types;
 
-using NHibernate;
-
 using System.Collections.Generic;
 using System.Linq;
 using System;
 
 namespace MpgWebService.Business.Data.Extension {
+
     public static class InputDataExtension {
-        public static List<ProductionOrderPailStatus> CreatePails(this InputData data, ISession session, StartCommand command) {
+
+        public static List<ProductionOrderPailStatus> CreatePails(this InputData data, StartCommand command) {
             List<ProductionOrderPailStatus> pails = new();
             DateTime now = DateTime.Now;
 
-            int size = (int)data.Order.PlannedQtyBUC;
+            int size = data.Order.PlannedQtyBUC;
             data.Order.Status = Resources.CMD_STARTED;
             data.Order.Priority = command.Priority.ToString();
 
@@ -30,14 +30,14 @@ namespace MpgWebService.Business.Data.Extension {
                     GrossWeight = 0,
                     QC = command.QC[index - 1],
                     Timeout = Resources.MAXIMUM_DOSAGE_TIME,
-                    StartDate = now,
-                    EndDate = now,
+                    StartDate = data.Order.PlannedStartDate,
+                    EndDate = data.Order.PlannedEndDate,
+                    MPGStatus = 1,
+                    MESStatus = 0,
                     MPGRowUpdated = now
                 };
 
                 pails.Add(pail);
-
-                session.Save(pail);
             });
 
             return pails;

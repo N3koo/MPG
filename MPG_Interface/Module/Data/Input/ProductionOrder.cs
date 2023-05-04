@@ -12,7 +12,7 @@ namespace MPG_Interface.Module.Data.Input {
 
         public string PlantID { get; init; }
 
-        public string Status { get; init; }
+        public string Status { get; set; }
 
         public decimal PlannedQtyBUC { get; init; }
 

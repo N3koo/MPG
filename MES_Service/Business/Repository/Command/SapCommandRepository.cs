@@ -14,10 +14,7 @@ namespace MpgWebService.Repository.Command {
 
     public class SapCommandRepository : ICommandRepository {
 
-        private readonly SapClient SapClient;
-
         public SapCommandRepository() {
-            SapClient = new SapClient();
         }
 
         public async Task<Response> BlockCommand(string POID) {
@@ -26,24 +23,24 @@ namespace MpgWebService.Repository.Command {
 
             switch (status) {
                 case 0:
-                    var result = SapClient.BlockCommand(POID);
+                    var result = SapClient.Client.BlockCommand(POID);
                     if (result == null) {
                         return Response.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {POID}");
                     }
                     break;
                 case 1:
-                    return Response.CreateOkResponse("Nu se poate bloca comanda deoarece s-a inceput procesul de productie");
+                    return Response.CreateErrorMpg($"Comanda {POID} nu se poate bloca deoarece s-a inceput procesul de productie");
                 case 2:
-                    po = await SapClient.BlockCommand(POID);
+                    po = await SapClient.Client.BlockCommand(POID);
                     MpgClient.Client.CreateCommand(po);
                     break;
             }
 
-            return Response.CreateOkResponse("Comanda a fost blocata cu succes");
+            return Response.CreateOkResponse($"Comanda {POID} a fost blocata cu succes");
         }
 
         public async Task<List<ProductionOrder>> GetCommands(Period period) {
-            var list = await SapClient.GetCommandsAsync(period);
+            var list = await SapClient.Client.GetCommandsAsync(period);
             list.AddRange(MpgClient.Client.GetCommands(period));
 
             return list;
@@ -56,7 +53,7 @@ namespace MpgWebService.Repository.Command {
 
         public async Task<Response> CloseCommand(string POID) {
             var result = MpgClient.Client.PartialMaterials(POID);
-            var response = await SapClient.SendPartialProductionAsync(result);
+            var response = await SapClient.Client.SendPartialProductionAsync(result);
 
             if (!response.Status) {
                 return response;
@@ -73,8 +70,8 @@ namespace MpgWebService.Repository.Command {
         }
 
         public async Task<Response> DownloadMaterials() {
-            var materials = await SapClient.GetInitialMaterialsAsync();
-            var phrases = await SapClient.GetRiskPhrasesAsync();
+            var materials = await SapClient.Client.GetInitialMaterialsAsync();
+            var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
             MpgClient.Client.SaveOrUpdateMaterials(materials);
             MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
@@ -85,8 +82,8 @@ namespace MpgWebService.Repository.Command {
         }
 
         public async Task<Response> UpdateMaterials() {
-            var materails = await SapClient.CheckSapMaterialsAsync();
-            var phrases = await SapClient.GetRiskPhrasesAsync();
+            var materails = await SapClient.Client.CheckSapMaterialsAsync();
+            var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
             MpgClient.Client.SaveOrUpdateMaterials(materails);
             MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
@@ -106,7 +103,7 @@ namespace MpgWebService.Repository.Command {
         }
 
         public Task<string> GetQC(string POID) {
-            var result = SapClient.GetQC(POID);
+            var result = SapClient.Client.GetQC(POID);
 
             if (result == null) {
                 result = MpgClient.Client.GetQc(POID);
@@ -117,7 +114,7 @@ namespace MpgWebService.Repository.Command {
 
         public async Task<Response> PartialProduction(string POID) {
             var result = MpgClient.Client.PartialMaterials(POID);
-            var response = await SapClient.SendPartialProductionAsync(result);
+            var response = await SapClient.Client.SendPartialProductionAsync(result);
 
             if (!response.Status) {
                 return response;
@@ -128,13 +125,13 @@ namespace MpgWebService.Repository.Command {
         }
 
         public async Task<Response> StartCommand(StartCommand qc) {
-            var list = SapClient.StartCommand(qc);
+            var list = SapClient.Client.StartCommand(qc);
 
             if (list.Count == 0) {
                 return Response.CreateErrorMpg($"Nu au fost inserate datele in MPG pentru comanda {qc.POID}");
             }
 
-            var result = await SapClient.SetCommandStatusAsync(qc.POID, Resources.CMD_STARTED);
+            var result = await SapClient.Client.SetCommandStatusAsync(qc.POID, Resources.CMD_STARTED);
 
             if (!result) {
                 return Response.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {qc.POID}");

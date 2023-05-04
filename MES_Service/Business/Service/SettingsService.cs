@@ -1,11 +1,10 @@
 ﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository;
-using MpgWebService.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 
 namespace MpgWebService.Business.Service {
     public class SettingsService : ISettingsService {

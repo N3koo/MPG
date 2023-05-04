@@ -6,7 +6,6 @@ using NHibernate;
 
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace DataEntity.Model.Types {
 
@@ -60,39 +59,25 @@ namespace DataEntity.Model.Types {
         public List<ProductionOrderPailStatus> ExportData(int priority, bool[] qc) {
             List<ProductionOrderPailStatus> pails = new();
 
-            using (ISession sqlite = SqliteDB.Instance.GetSession()) {
-                using (ITransaction transaction = sqlite.BeginTransaction()) {
-                    int size = (int)Order.PlannedQtyBUC;
-                    Order.Priority = priority.ToString(); //TODO: Remove this
-                    Order.Status = Properties.Resources.CMD_PRLS;
-                    Enumerable.Range(1, size).ToList().ForEach(data => {
-                        var local = new ProductionOrderPailStatus() {
-                            CreationDate = DateTime.Now,
-                            PailNumber = $"{data}",
-                            POID = Order.POID,
-                            PailStatus = Properties.Resources.CMD_ELB,
-                            NetWeight = OrderFinalItem[0].ItemQty / Order.PlannedQtyBUC,
-                            GrossWeight = 0,
-                            QC = qc[data - 1],
-                            Timeout = Properties.Resources.MaximumDosageTime,
-                            StartDate = DateTime.Now,
-                            EndDate = DateTime.Now,
-                            MPGRowUpdated = DateTime.Now
-                        };
+            using ISession sqlite = MpgDb.Instance.GetSession();
+            using ITransaction transaction = sqlite.BeginTransaction();
 
-                        pails.Add(local);
-                        _ = sqlite.Save(local);
-                    });
+            int size = (int)Order.PlannedQtyBUC;
+            Order.Priority = priority.ToString(); //TODO: Remove this
+            Order.Status = Properties.Resources.CMD_PRLS;
+            Enumerable.Range(1, size).ToList().ForEach(data => {
+                var local = ProductionOrderPailStatus.CreatePail(this, data, qc);
+                pails.Add(local);
+                _ = sqlite.Save(local);
+            });
 
-                    DataUOMS.ForEach(item => sqlite.Save(item));
-                    OrderBOM.ForEach(item => sqlite.Save(item));
-                    OrderFinalItem.ForEach(item => sqlite.Save(item));
-                    LotDetails.ForEach(item => sqlite.Save(item));
-                    _ = sqlite.Save(LotHeader);
-                    _ = sqlite.Save(Order);
-                    transaction.Commit();
-                }
-            }
+            DataUOMS.ForEach(item => sqlite.Save(item));
+            OrderBOM.ForEach(item => sqlite.Save(item));
+            OrderFinalItem.ForEach(item => sqlite.Save(item));
+            LotDetails.ForEach(item => sqlite.Save(item));
+            _ = sqlite.Save(LotHeader);
+            _ = sqlite.Save(Order);
+            transaction.Commit();
 
             return pails;
         }

@@ -1,5 +1,5 @@
-﻿using MpgWebService.Repository.Interface;
-using MpgWebService.DTO;
+﻿using MpgWebService.Presentation.Request;
+using MpgWebService.Repository.Interface;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;

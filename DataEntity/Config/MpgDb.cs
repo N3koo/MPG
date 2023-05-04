@@ -1,27 +1,25 @@
-﻿using DataEntity.Model.Input;
-using DataEntity.Model.Output;
+﻿using DataEntity.Model.Output;
+using DataEntity.Model.Input;
 
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Cfg;
 
 using NHibernate.Tool.hbm2ddl;
 using NHibernate;
-using NHibernate.Cfg;
 
 namespace DataEntity.Config {
     public class MpgDb {
         /// <summary>
         /// Used to store the session factory
         /// </summary>
-        private ISessionFactory _factory;
+        private ISessionFactory factory;
 
         /// <summary>
-        /// Instance for the singleton
+        /// Gets instance for the singleton.
         /// </summary>
         public static MpgDb Instance { get; } = new MpgDb();
 
         /// <summary>
-        /// Hide the constructor
         /// </summary>
         private MpgDb() {
 
@@ -33,8 +31,8 @@ namespace DataEntity.Config {
         /// <returns>Reference to the new session</returns>
         public ISession GetSession() {
 
-            if (_factory == null) {
-                _factory = Fluently.Configure()
+            if (factory == null) {
+                factory = Fluently.Configure()
                     .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(Properties.Resources.MPG_Server)
                     .Database(Properties.Resources.MPG_Database)
                     .Username(Properties.Resources.MPG_User)
@@ -57,25 +55,24 @@ namespace DataEntity.Config {
                         _ = m.FluentMappings.AddFromAssemblyOf<ProductionOrderStatus>();
                         _ = m.FluentMappings.AddFromAssemblyOf<ProductionOrderBom>();
                         _ = m.FluentMappings.AddFromAssemblyOf<StockVessel>();
-                        _ = m.FluentMappings.AddFromAssemblyOf<Clasification>();
+                        _ = m.FluentMappings.AddFromAssemblyOf<Classification>();
                         _ = m.FluentMappings.AddFromAssemblyOf<AlternativeName>();
                     })
                     .ExposeConfiguration(config => {
-                        new SchemaExport(config).Execute(true, true, false);
+                        _ = new SchemaExport(config);
                     })
                     .BuildSessionFactory();
-
             }
 
-            return _factory.OpenSession();
+            return factory.OpenSession();
         }
 
         /// <summary>
         /// Destructor that closes the session factory
         /// </summary>
         ~MpgDb() {
-            if (_factory != null) {
-                _factory.Close();
+            if (factory != null) {
+                factory.Close();
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Business.Data.Exceptions;
 using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Command;
@@ -19,7 +18,7 @@ namespace MpgWebService.Business.Service {
         private readonly ICommandRepository repository;
 
         public CommandService() {
-            repository = new SapCommandRepository();
+            repository = new MesCommandRepository();
         }
 
         public CommandService(ICommandRepository repository) {
@@ -28,11 +27,7 @@ namespace MpgWebService.Business.Service {
 
         public async Task<Response> BlockCommand(string POID) {
             var result = await repository.BlockCommand(POID);
-
-            if (!result.Status) {
-                CheckErrors(result);
-            }
-
+            result.CheckErrors();
             return result;
         }
 
@@ -42,11 +37,7 @@ namespace MpgWebService.Business.Service {
 
         public async Task<Response> CloseCommand(string POID) {
             var response = await repository.CloseCommand(POID);
-
-            if (!response.Status) {
-                CheckErrors(response);
-            }
-
+            response.CheckErrors();
             return response;
         }
 
@@ -60,10 +51,7 @@ namespace MpgWebService.Business.Service {
                 response = await repository.UpdateMaterials();
             }
 
-            if (!response.Status) {
-                CheckErrors(response);
-            }
-
+            response.CheckErrors();
             return response;
         }
 
@@ -83,33 +71,14 @@ namespace MpgWebService.Business.Service {
 
         public async Task<Response> StartCommand(StartCommand qc) {
             var result = await repository.StartCommand(qc);
-
-            if (!result.Status) {
-                CheckErrors(result);
-            }
-
+            result.CheckErrors();
             return result;
         }
 
         public async Task<Response> StartPartialProduction(string POID) {
             var result = await repository.PartialProduction(POID);
-
-            if (!result.Status) {
-                CheckErrors(result);
-            }
-
+            result.CheckErrors();
             return result;
-        }
-
-        private void CheckErrors(Response response) {
-            switch (response.Type) {
-                case ServerType.Mes:
-                    throw new MesException(response.Message);
-                case ServerType.Mpg:
-                    throw new MpgException(response.Message);
-                case ServerType.Sap:
-                    throw new SapException(response.Message);
-            }
         }
     }
 }

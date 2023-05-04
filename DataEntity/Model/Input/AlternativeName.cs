@@ -9,18 +9,12 @@ namespace DataEntity.Model.Input {
     /// Class the manipulates the alternative names of the products
     /// </summary>
     public class AlternativeName {
-
         public virtual string MaterialID { set; get; }
         public virtual string Language { set; get; }
         public virtual string LanguageID { set; get; }
         public virtual string Description { set; get; }
         public virtual string AlternativeDesc { set; get; }
         public virtual string Colour { set; get; }
-        public virtual int MESStatus { set; get; }
-        public virtual int? MPGStatus { set; get; }
-        public virtual string MPGErrorMessage { set; get; }
-        public virtual DateTime? MPGRowUpdated { set; get; }
-
 
         /// <summary>
         /// Default constructor
@@ -50,15 +44,15 @@ namespace DataEntity.Model.Input {
             if (obj is not AlternativeName other) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return MaterialID == other.MaterialID && LanguageID == other.LanguageID;
+            return MaterialID == other.MaterialID && Language == other.Language;
         }
 
         /// <summary>
         /// Used to override the function
         /// </summary>
-        /// <returns>Hashcode for the needed fields</returns>
+        /// <returns>Hash code for the needed fields</returns>
         public override int GetHashCode() {
-            return HashCode.Combine(MaterialID, LanguageID);
+            return HashCode.Combine(MaterialID, Language);
         }
 
         /// <summary>
@@ -89,18 +83,14 @@ namespace DataEntity.Model.Input {
         /// Constructor
         /// </summary>
         public AlternativeNameMap() {
-            Table("MES2MPG_MaterialDataAlternativeDescription");
+            Table("MES2MPG_MaterialDataAlternativeDescriptions");
 
-            _ = CompositeId().KeyProperty(x => x.MaterialID).KeyProperty(x => x.LanguageID);
+            _ = CompositeId().KeyProperty(x => x.MaterialID).KeyProperty(x => x.Language);
 
-            _ = Map(x => x.Language).Nullable();
+            _ = Map(x => x.LanguageID).Nullable();
             _ = Map(x => x.Description).Nullable();
             _ = Map(x => x.AlternativeDesc).Nullable();
             _ = Map(x => x.Colour).Nullable();
-            _ = Map(x => x.MESStatus).Nullable();
-            _ = Map(x => x.MPGStatus).Nullable();
-            _ = Map(x => x.MPGErrorMessage).Nullable();
-            _ = Map(x => x.MPGRowUpdated).Nullable();
         }
     }
 }

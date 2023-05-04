@@ -10,6 +10,7 @@ namespace MpgWebService.Presentation.Controllers {
 
     [ApiController]
     [Route("[controller]")]
+    [Produces("text/json")]
     public class CommandController : ControllerBase {
 
         private readonly ICommandService service;
@@ -51,19 +52,18 @@ namespace MpgWebService.Presentation.Controllers {
         [HttpDelete("Block/{POID}")]
         public async Task<IActionResult> BlockCommand(string POID) {
             var result = await service.BlockCommand(POID);
-            return Ok(result);
+            return Ok(result.Message);
         }
 
         [HttpPut("Close/{POID}")]
         public async Task<IActionResult> CloseCommand(string POID) {
             var result = await service.CloseCommand(POID);
-            return Ok(result);
+            return Ok(result.Message);
         }
 
         [HttpPut("Partial/{POID}")]
         public async Task<IActionResult> PartialProduction(string POID) {
             var result = await service.StartPartialProduction(POID);
-
             return Ok(result.Message);
         }
 

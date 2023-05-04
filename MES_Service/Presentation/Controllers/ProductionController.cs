@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MpgWebService.Presentation.Controllers {
 
-    [Route("[controller]")]
     [ApiController]
+    [Route("[controller]")]
+    [Produces("text/json")]
     public class ProductionController : ControllerBase {
 
         private readonly IProductionService service;

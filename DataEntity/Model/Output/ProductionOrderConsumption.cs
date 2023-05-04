@@ -5,7 +5,7 @@ using System;
 namespace DataEntity.Model.Output {
 
     public class ProductionOrderConsumption {
-        public virtual int ID { set; get; }
+        public virtual Int64 ID { set; get; }
         public virtual DateTime CreationDate { set; get; }
         public virtual string POID { set; get; }
         public virtual string MaterialID { set; get; }
@@ -15,10 +15,10 @@ namespace DataEntity.Model.Output {
         public virtual string ItemUom { set; get; }
         public virtual string ItemLot { set; get; }
         public virtual string ItemStorageLoc { set; get; }
-        public virtual int MPGStatus { set; get; }
-        public virtual int MESStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
+        public virtual int? MESStatus { set; get; }
         public virtual string ErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
     }
 
     public class ProductionOrderConsumptionMap : ClassMap<ProductionOrderConsumption> {

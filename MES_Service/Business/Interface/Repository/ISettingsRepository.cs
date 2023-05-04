@@ -1,5 +1,4 @@
-﻿using MpgWebService.DTO;
-
+﻿using MpgWebService.Presentation.Request;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

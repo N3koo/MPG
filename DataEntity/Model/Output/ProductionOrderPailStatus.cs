@@ -1,11 +1,14 @@
-﻿using FluentNHibernate.Mapping;
+﻿using DataEntity.Model.Types;
+using DataEntity.Properties;
+
+using FluentNHibernate.Mapping;
 
 using System;
 
 namespace DataEntity.Model.Output {
 
     public class ProductionOrderPailStatus {
-        public virtual int ID { set; get; }
+        public virtual Int64 ID { set; get; }
         public virtual DateTime CreationDate { set; get; }
         public virtual string POID { set; get; }
         public virtual string PailNumber { set; get; }
@@ -20,10 +23,24 @@ namespace DataEntity.Model.Output {
         public virtual string Timeout { set; get; }
         public virtual string Ticket { set; get; }
         public virtual string Consumption { set; get; }
-        public virtual int MPGStatus { set; get; }
-        public virtual int MESStatus { set; get; }
+        public virtual int? MPGStatus { set; get; }
+        public virtual int? MESStatus { set; get; }
         public virtual string ErrorMessage { set; get; }
-        public virtual DateTime MPGRowUpdated { set; get; }
+        public virtual DateTime? MPGRowUpdated { set; get; }
+
+        public static ProductionOrderPailStatus CreatePail(InputData data, int index, bool[] qc) => new() {
+            CreationDate = DateTime.Now,
+            PailNumber = $"{index}",
+            POID = data.Order.POID,
+            PailStatus = Resources.CMD_ELB,
+            NetWeight = data.OrderFinalItem[0].ItemQty / data.Order.PlannedQtyBUC,
+            GrossWeight = 0,
+            QC = qc[index - 1],
+            Timeout = Resources.MaximumDosageTime,
+            StartDate = data.Order.PlannedStartDate,
+            EndDate = data.Order.PlannedEndDate,
+            MPGRowUpdated = DateTime.Now
+        };
     }
 
     public class ProductionOrderPailStatusMap : ClassMap<ProductionOrderPailStatus> {

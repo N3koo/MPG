@@ -8,8 +8,7 @@ namespace DataEntity.Model.Input {
     /// Used to download the corrections for a command
     /// </summary>
     public class Correction {
-
-        public virtual int ID { set; get; }
+        public virtual Int64 ID { set; get; }
         public virtual DateTime CreationDate { set; get; }
         public virtual string POID { set; get; }
         public virtual string MaterialID { set; get; }
@@ -18,7 +17,7 @@ namespace DataEntity.Model.Input {
         public virtual string RawMaterialID { set; get; }
         public virtual decimal ItemQuantity { set; get; }
         public virtual string ItemUOM { set; get; }
-        public virtual int MESStatus { set; get; }
+        public virtual int? MESStatus { set; get; }
         public virtual int? MPGStatus { set; get; }
         public virtual string MPGErrorMessage { set; get; }
         public virtual DateTime? MPGRowUpdated { set; get; }
