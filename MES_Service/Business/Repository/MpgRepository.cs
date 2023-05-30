@@ -13,11 +13,11 @@ namespace MpgWebService.Repository.Command {
 
     public class MpgRepository : IMpgRepository {
 
-        public Task<Response> ChangeStatus(string POID, string indexPail, string status) {
+        public Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status) {
             MpgClient.Client.ChangeStatus(POID, indexPail, status);
             MesClient.Client.ChangeStatus(POID, indexPail, status);
 
-            return Task.FromResult(Response.CreateOkResponse("Ok"));
+            return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
         }
 
         public Task<List<CorrectionDto>> GetCorrections(QcDetails details) {
@@ -27,22 +27,22 @@ namespace MpgWebService.Repository.Command {
 
 
 
-        public Task<Response> SaveCorrection(POCorrection correction) {
+        public Task<ServiceResponse> SaveCorrection(POCorrection correction) {
             var po = POCorrection.CreatePOCorrection(correction);
 
             MesClient.Client.SaveCorrection(po);
             MpgClient.Client.SaveCorrection(po);
 
-            return Task.FromResult(Response.CreateOkResponse("Ok"));
+            return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
         }
 
-        public Task<Response> SaveDosageMaterials(List<POConsumption> materials) {
+        public Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials) {
             var consumption = materials.Select(p => POConsumption.CreateConsumption(p)).ToList();
 
             MesClient.Client.SaveDosageMaterials(consumption);
             MpgClient.Client.SaveDosageMaterials(consumption);
 
-            return Task.FromResult(Response.CreateOkResponse("Materialele au fost salvate"));
+            return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost salvate"));
         }
 
         public Task<object> GetAvailablePail() {

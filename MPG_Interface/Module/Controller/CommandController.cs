@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Windows;
 using System.Linq;
+using log4net;
 
 namespace MPG_Interface.Module.Interfaces {
 
@@ -54,6 +55,12 @@ namespace MPG_Interface.Module.Interfaces {
             end = local[2] as DatePicker;
             status = local[3] as ComboBox;
 
+            ILog log = FactoryData.GetLogger();
+            log.Debug("This is a Debug message");
+            log.Info("This is a Info message");
+            log.Warn("This is a Warning message");
+            log.Error("This is an Error message");
+            log.Fatal("This is a Fatal message");
             SetEvents();
         }
 

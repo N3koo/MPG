@@ -18,7 +18,7 @@ namespace MpgWebService.Business.Service {
             repository = new MpgRepository();
         }
 
-        public async Task<Response> ChangeStatus(string POID, string pail, string status) {
+        public async Task<ServiceResponse> ChangeStatus(string POID, string pail, string status) {
             var result = await repository.ChangeStatus(POID, pail, status);
             result.CheckErrors();
             return result;
@@ -31,7 +31,7 @@ namespace MpgWebService.Business.Service {
         public async Task<List<CorrectionDto>> GetCorrections(QcDetails details) {
             var result = await repository.GetCorrections(details);
             if (result.Count == 0) {
-                Response.CreateErrorMes("Nu exista corectii").CheckErrors();
+                ServiceResponse.CreateErrorMes("Nu exista corectii").CheckErrors();
             }
 
             return result;
@@ -40,7 +40,7 @@ namespace MpgWebService.Business.Service {
         public async Task<List<Materials>> GetMaterials(string POID) {
             var result = await repository.GetMaterials(POID);
             if (result.Count == 0) {
-                Response.CreateErrorMes($"Nu exista materiale pentru comanda {POID}").CheckErrors();
+                ServiceResponse.CreateErrorMes($"Nu exista materiale pentru comanda {POID}").CheckErrors();
             }
 
             return result;
@@ -50,19 +50,19 @@ namespace MpgWebService.Business.Service {
             var result = await repository.GetOperationsList(POID);
 
             if (result.Count == 0) {
-                Response.CreateErrorMes("Nu exisa pasi de QC").CheckErrors();
+                ServiceResponse.CreateErrorMes("Nu exisa pasi de QC").CheckErrors();
             }
 
             return result;
         }
 
-        public async Task<Response> SaveCorrection(POCorrection correction) {
+        public async Task<ServiceResponse> SaveCorrection(POCorrection correction) {
             var result = await repository.SaveCorrection(correction);
             result.CheckErrors();
             return result;
         }
 
-        public async Task<Response> SaveDosageMaterials(List<POConsumption> materials) {
+        public async Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials) {
             var result = await repository.SaveDosageMaterials(materials);
             result.CheckErrors();
             return result;
@@ -72,7 +72,7 @@ namespace MpgWebService.Business.Service {
             var result = await repository.SetQcStatus(details);
 
             if (result == null) {
-                Response.CreateErrorMes("Nu exista corectie").CheckErrors();
+                ServiceResponse.CreateErrorMes("Nu exista corectie").CheckErrors();
             }
 
             return result;

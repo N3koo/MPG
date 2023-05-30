@@ -170,6 +170,7 @@ namespace MpgWebService.Repository.Clients {
             data.DataUOMS = session.Query<MaterialDataUOMS>().Where(p => p.MaterialID == data.Order.MaterialID).ToList();
             data.OrderBOM = session.Query<ProductionOrderBom>().Where(p => p.POID == poid).ToList();
             data.OrderFinalItem = session.Query<ProductionOrderFinalItem>().Where(p => p.POID == poid).ToList();
+            data.LotDetails = session.Query<ProductionOrderLotDetail>().Where(p => p.POID == poid).ToList();
             data.LotHeader = session.Query<ProductionOrderLotHeader>().First(p => p.POID == poid);
 
             data.Order.MPGRowUpdated = DateTime.Now;

@@ -21,15 +21,12 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPail() {
-            var result = await service.GetAvailablePail();
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetPail() =>
+            Ok(await service.GetAvailablePail());
 
         [HttpGet("{POID}")]
         public async Task<IActionResult> GetMaterials(string POID) {
-            var result = await service.GetMaterials(POID);
-            return Ok(result);
+            return Ok(await service.GetMaterials(POID));
         }
 
 

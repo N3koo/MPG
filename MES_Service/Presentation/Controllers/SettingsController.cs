@@ -20,15 +20,11 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSettings() {
-            var result = await service.GetSettings();
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetSettings() =>
+            Ok(await service.GetSettings());
 
         [HttpPut]
-        public async Task<IActionResult> SetSettings([FromBody] List<SettingsElement> settings) {
-            var result = await service.SetSettings(settings);
-            return Ok(result);
-        }
+        public async Task<IActionResult> SetSettings([FromBody] List<SettingsElement> settings) =>
+            Ok(await service.SetSettings(settings));
     }
 }

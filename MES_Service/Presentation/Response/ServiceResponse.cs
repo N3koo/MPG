@@ -1,6 +1,6 @@
 ﻿using MpgWebService.Business.Data.Exceptions;
 
-namespace MpgWebService.Business.Data.DTO {
+namespace MpgWebService.Presentation.Response {
 
     public enum ServerType {
         Ok,
@@ -9,7 +9,7 @@ namespace MpgWebService.Business.Data.DTO {
         Mes
     }
 
-    public class Response {
+    public class ServiceResponse {
         public string Message { set; get; }
         public bool Status { set; get; }
         public ServerType Type { set; get; }
@@ -33,25 +33,25 @@ namespace MpgWebService.Business.Data.DTO {
             Message = $"{Message}\n{message}";
         }
 
-        public static Response CreateErrorSap(string message) => new() {
+        public static ServiceResponse CreateErrorSap(string message) => new() {
             Message = message,
             Type = ServerType.Sap,
             Status = false
         };
 
-        public static Response CreateErrorMpg(string message) => new() {
+        public static ServiceResponse CreateErrorMpg(string message) => new() {
             Message = message,
             Type = ServerType.Mpg,
             Status = false
         };
 
-        public static Response CreateErrorMes(string message) => new() {
+        public static ServiceResponse CreateErrorMes(string message) => new() {
             Message = message,
             Type = ServerType.Mes,
             Status = false
         };
 
-        public static Response CreateOkResponse(string message) => new() {
+        public static ServiceResponse CreateOkResponse(string message) => new() {
             Message = message,
             Type = ServerType.Ok,
             Status = true

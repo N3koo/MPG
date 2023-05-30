@@ -5,8 +5,12 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Net.Http;
+using System.Diagnostics;
 using System.Web;
 using System;
+
+using log4net;
+using System.IO;
 
 namespace MPG_Interface.Module.Data {
     public class FactoryData {
@@ -16,7 +20,12 @@ namespace MPG_Interface.Module.Data {
 
         public static HttpClient CreateClient() {
             HttpClient client = new();
-            client.BaseAddress = new Uri(Properties.Resources.Service_URL);
+#if DEBUG
+            client.BaseAddress = new Uri(Properties.Resources.Debug_URL);
+#else
+            client.BaseAddress = new Uri(Properties.Resources.Release_URL);
+#endif
+            Debug.WriteLine(client.BaseAddress);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             client.Timeout = TimeSpan.FromMinutes(10);
 
@@ -52,6 +61,10 @@ namespace MPG_Interface.Module.Data {
             json.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             return json;
+        }
+
+        public static ILog GetLogger() {
+            return LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         }
     }
 }

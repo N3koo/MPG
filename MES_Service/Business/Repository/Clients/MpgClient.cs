@@ -1,5 +1,4 @@
 ﻿using MpgWebService.Presentation.Request;
-using MpgWebService.Business.Data.DTO;
 using MpgWebService.Properties;
 
 using DataEntity.Model.Output;
@@ -10,6 +9,7 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -131,7 +131,7 @@ namespace MpgWebService.Repository.Clients {
             return 0;
         }
 
-        public Response CreateCommand(ProductionOrder po) {
+        public ServiceResponse CreateCommand(ProductionOrder po) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -140,10 +140,10 @@ namespace MpgWebService.Repository.Clients {
             session.Save(po);
             transaction.Commit();
 
-            return Response.CreateOkResponse("Comanda a fost salvata");
+            return ServiceResponse.CreateOkResponse("Comanda a fost salvata");
         }
 
-        public Response CloseCommand(string POID) {
+        public ServiceResponse CloseCommand(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -154,7 +154,7 @@ namespace MpgWebService.Repository.Clients {
             session.Update(result);
             transaction.Commit();
 
-            return Response.CreateOkResponse("Comanda a fost inchisa");
+            return ServiceResponse.CreateOkResponse("Comanda a fost inchisa");
         }
 
         public Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> PartialMaterials(string POID) {
@@ -168,7 +168,7 @@ namespace MpgWebService.Repository.Clients {
             return Tuple.Create(po, pails, ldm, position);
         }
 
-        public Response UpdateTickets(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
+        public ServiceResponse UpdateTickets(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -178,7 +178,7 @@ namespace MpgWebService.Repository.Clients {
 
             transaction.Commit();
 
-            return Response.CreateOkResponse("Materialele au fost actulizate");
+            return ServiceResponse.CreateOkResponse("Materialele au fost actulizate");
         }
 
         public void StartCommand(Tuple<InputData, List<ProductionOrderPailStatus>> data) {
@@ -201,7 +201,7 @@ namespace MpgWebService.Repository.Clients {
             transaction.Commit();
         }
 
-        public Response SaveOrUpdateMaterials(Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>> tuple) {
+        public ServiceResponse SaveOrUpdateMaterials(Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>> tuple) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -242,7 +242,7 @@ namespace MpgWebService.Repository.Clients {
 
             transaction.Commit();
 
-            return Response.CreateOkResponse("Materialele au fost actualizate");
+            return ServiceResponse.CreateOkResponse("Materialele au fost actualizate");
         }
 
         public void SaveOrUpdateRiskPhrases(List<RiskPhrase> phrases) {

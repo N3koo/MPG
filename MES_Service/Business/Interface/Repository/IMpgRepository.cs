@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace MpgWebService.Repository.Interface {
     public interface IMpgRepository {
-        Task<Response> ChangeStatus(string POID, string indexPail, string status);
+        Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status);
         Task<object> GetAvailablePail();
         Task<List<CorrectionDto>> GetCorrections(QcDetails details);
         Task<List<Materials>> GetMaterials(string POID);
         Task<List<LotDetails>> GetOperationsList(string POID);
-        Task<Response> SaveCorrection(POCorrection correction);
-        Task<Response> SaveDosageMaterials(List<POConsumption> materials);
+        Task<ServiceResponse> SaveCorrection(POCorrection correction);
+        Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials);
         Task<QcLabel> SetQcStatus(QcDetails details);
     }
 }

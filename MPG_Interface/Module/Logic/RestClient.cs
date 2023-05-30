@@ -1,5 +1,6 @@
 ﻿using MPG_Interface.Module.Data.Output;
 using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Visual;
 using MPG_Interface.Module.Data;
 
 using System.Collections.Specialized;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Net.Http;
 using System;
-using MPG_Interface.Module.Visual;
+using log4net;
 
 namespace MPG_Interface.Module.Logic {
 
@@ -27,12 +28,14 @@ namespace MPG_Interface.Module.Logic {
         /// </summary>
         public delegate void OnEndCall();
 
-        public static readonly RestClient Client = new();
 
         public event OnStartCall StartCall;
+
         public event OnEndCall EndCall;
 
         private readonly HttpClient client;
+
+        public static readonly RestClient Client = new();
 
         public RestClient() {
             client = FactoryData.CreateClient();
@@ -51,8 +54,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<ReportCommand>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -69,8 +71,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 return JsonSerializer.Deserialize<bool>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             return false;
@@ -86,8 +87,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<SettingsElement>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             return result;
@@ -105,8 +105,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<ReportMaterial>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -125,8 +124,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<ReportMaterial>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -146,8 +144,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<StatusCommand>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -167,8 +164,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result.AddRange(JsonSerializer.Deserialize<List<ProductionOrder>>(data));
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -185,8 +181,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 return JsonSerializer.Deserialize<bool>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             return false;
@@ -204,7 +199,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                Alerts.ShowMessage(data);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -223,7 +218,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                Alerts.ShowMessage(data);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -242,7 +237,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                Alerts.ShowMessage(data);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -261,7 +256,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                Alerts.ShowMessage(data);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -281,8 +276,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             EndCall?.Invoke();
@@ -299,8 +293,7 @@ namespace MPG_Interface.Module.Logic {
             if (response.IsSuccessStatusCode) {
                 result = JsonSerializer.Deserialize<string>(data);
             } else {
-                string message = JsonSerializer.Deserialize<string>(data);
-                Alerts.ShowMessage(message);
+                Alerts.ShowError(data);
             }
 
             return result;
@@ -310,7 +303,7 @@ namespace MPG_Interface.Module.Logic {
             try {
                 return await function();
             } catch (Exception ex) {
-                Alerts.ShowMessage(ex.Message);
+                Alerts.ShowError(ex.Message);
             }
 
             EndCall?.Invoke();

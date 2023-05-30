@@ -1,8 +1,8 @@
 ﻿using MpgWebService.Presentation.Request;
-using MpgWebService.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Business.Interface.Service {
     public interface IProductionService {

@@ -1,9 +1,10 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Response;
+using MpgWebService.Presentation.Request;
+
 using DataEntity.Model.Input;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Repository.Interface {
 
@@ -17,16 +18,16 @@ namespace MpgWebService.Repository.Interface {
 
         Task<string> GetQC(string POID);
 
-        Task<Response> StartCommand(StartCommand qc);
+        Task<ServiceResponse> StartCommand(StartCommand qc);
 
-        Task<Response> BlockCommand(string POID);
+        Task<ServiceResponse> BlockCommand(string POID);
 
-        Task<Response> CloseCommand(string POID);
+        Task<ServiceResponse> CloseCommand(string POID);
 
-        Task<Response> PartialProduction(string POID);
+        Task<ServiceResponse> PartialProduction(string POID);
 
-        Task<Response> DownloadMaterials();
+        Task<ServiceResponse> DownloadMaterials();
 
-        Task<Response> UpdateMaterials();
+        Task<ServiceResponse> UpdateMaterials();
     }
 }

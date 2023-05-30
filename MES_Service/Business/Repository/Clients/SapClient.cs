@@ -1,5 +1,4 @@
 ﻿using MpgWebService.Presentation.Request;
-using MpgWebService.Business.Data.DTO;
 using MpgWebService.Data.Extension;
 using MpgWebService.Properties;
 
@@ -16,6 +15,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System;
+using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -65,8 +65,8 @@ namespace MpgWebService.Repository.Clients {
         /// </summary>
         /// <param name="tuple"></param>
         /// <returns></returns>
-        public async Task<Response> SendPartialProductionAsync(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
-            var response = Response.CreateOkResponse("Materialele au fost transmise");
+        public async Task<ServiceResponse> SendPartialProductionAsync(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
+            var response = ServiceResponse.CreateOkResponse("Materialele au fost transmise");
             StringBuilder builder = new();
 
             Z_MPGPREDARE rendition = tuple.Item1.CreatePredare(tuple.Item2.Count, tuple.Item4);
@@ -78,7 +78,7 @@ namespace MpgWebService.Repository.Clients {
             });
 
             if (string.IsNullOrEmpty(tuple.Item2[0].Ticket)) {
-                response = Response.CreateErrorSap(result.Z_MPGPREDAREResponse.ERRORS[0].ERRORMESSAGE);
+                response = ServiceResponse.CreateErrorSap(result.Z_MPGPREDAREResponse.ERRORS[0].ERRORMESSAGE);
             }
 
             Z_MPGCONSUM consumption = tuple.Item1.CreateConsumption(tuple.Item3);
@@ -97,7 +97,7 @@ namespace MpgWebService.Repository.Clients {
 
             if (string.IsNullOrEmpty(tuple.Item2[0].Consumption)) {
                 if (response.Status) {
-                    response = Response.CreateErrorSap(builder.ToString());
+                    response = ServiceResponse.CreateErrorSap(builder.ToString());
                 } else {
                     response.AddError(builder.ToString());
                 }

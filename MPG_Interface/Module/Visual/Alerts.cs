@@ -19,6 +19,11 @@ namespace MPG_Interface.Module.Visual {
 
         }
 
+        public static void ShowError(string message) {
+            _ = MessageBox.Show(Application.Current.MainWindow, message, "",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         /// <summary>
         /// 
         /// </summary>

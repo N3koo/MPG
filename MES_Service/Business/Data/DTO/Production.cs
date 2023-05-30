@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MpgWebService.DTO {
+namespace MpgWebService.Business.Data.DTO {
 
     public record Production {
 

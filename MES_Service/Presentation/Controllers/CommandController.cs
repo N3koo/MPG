@@ -68,7 +68,7 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpPost("Materials")]
-        public async Task<ActionResult<bool>> DownloadMaterials() {
+        public async Task<ActionResult> DownloadMaterials() {
             var result = await service.DownloadMaterials();
             return Ok(result.Message);
         }

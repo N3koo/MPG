@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MpgWebService.DTO {
+namespace MpgWebService.Business.Data.DTO {
 
     public record ReportMaterial {
 
@@ -11,10 +11,10 @@ namespace MpgWebService.DTO {
         public string Description { get; init; }
 
         [JsonPropertyName("NetQuantity")]
-        public double NetQuantity { get; init; }
+        public decimal NetQuantity { get; init; }
 
         [JsonPropertyName("BrutQuantity")]
-        public double BrutQuantity { get; set; }
+        public decimal BrutQuantity { get; set; }
 
         [JsonPropertyName("ItemUom")]
         public string ItemUom { get; init; }

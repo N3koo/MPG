@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows;
+using System.Linq;
 
 namespace MPG_Interface.Xaml {
 
@@ -64,22 +65,20 @@ namespace MPG_Interface.Xaml {
         }
 
         private void SetDetails() {
-            /*local = new bool[quantity];
-            original = new bool[quantity];
-
-            for (int i = 0; i < original.Length; i++) {
+            bool[] local = command.QC;
+            for (int i = 0; i < local.Length; i++) {
                 DetailElement element = new(local[i], i + 1, command.POID);
                 listElements.Add(element);
                 tbDetails.RowGroups[0].Rows.Add(element);
-            }/**/
+            }
         }
 
         private void SetEvents() {
             Closed += (sender, args) => {
                 int size = listElements.Count;
-                /*for (int i = 0; i < size; i++) {
-                    local[i] = listElements[i].GetStatus();
-                }/**/
+                for (int i = 0; i < size; i++) {
+                    command.QC[i] = listElements[i].GetStatus();
+                }
 
                 Close();
             };

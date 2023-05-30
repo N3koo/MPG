@@ -27,7 +27,6 @@ namespace MPG_Interface.Module.Data.Output {
         }
 
         public static StartCommand CreateCommand(string POID, string qc, int size) {
-            qc = string.IsNullOrEmpty(qc) ? "1" : qc;
             var result = ListQc.FirstOrDefault(p => p.POID == POID);
             if (result != null) {
                 return result;

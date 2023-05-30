@@ -3,7 +3,6 @@
 using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Data.Extension;
-using MpgWebService.DTO;
 
 using DataEntity.Model.Input;
 using DataEntity.Model.Output;
@@ -12,6 +11,7 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Repository {
 
@@ -19,11 +19,11 @@ namespace MpgWebService.Repository {
 
         private readonly string QueryCommand = "SELECT pc.item, md.Description, SUM(pc.itemQty) AS NetQuantity, pc.ItemUom " +
                "FROM MPG2MES_ProductionOrderConsumptions pc LEFT JOIN MES2MPG_MaterialData md ON pc.Item = md.MaterialID " +
-               "WHERE pc.POID = ? GROUP BY pc.Item;";
+               "WHERE pc.POID = ? GROUP BY pc.Item, md.Description, pc.ItemUom;";
 
         private readonly string QueryPail = "SELECT pc.item, md.Description, pc.itemQty AS NetQuantity, pc.ItemUom " +
                 "FROM MPG2MES_ProductionOrderConsumptions pc LEFT JOIN MES2MPG_MaterialData md ON pc.Item = md.MaterialID " +
-                "WHERE pc.POID = ? AND pc.PailNumber = ? GROUP BY pc.Item;";
+                "WHERE pc.POID = ? AND pc.PailNumber = ?";
 
         public Task<List<ReportCommand>> GetReport(Period period) {
             List<ReportCommand> dtos = new();
@@ -57,7 +57,7 @@ namespace MpgWebService.Repository {
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);
-                material.BrutQuantity = (double)item.ItemQty;
+                material.BrutQuantity = item.ItemQty;
             });
 
             return Task.FromResult(materials);
@@ -76,7 +76,7 @@ namespace MpgWebService.Repository {
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);
-                material.BrutQuantity = (double)item.ItemQty / boms.Count;
+                material.BrutQuantity = item.ItemQty / boms.Count;
             });
 
             return Task.FromResult(materials);

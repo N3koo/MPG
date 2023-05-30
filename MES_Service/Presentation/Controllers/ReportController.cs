@@ -1,12 +1,12 @@
 ﻿using MpgWebService.Business.Interface.Service;
 using MpgWebService.Presentation.Request;
 using MpgWebService.Business.Service;
-using MpgWebService.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Presentation.Controllers {
 
@@ -22,19 +22,15 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ReportCommand>> GetReport([FromQuery] Period period) {
-            return await repository.GetReport(period);
-        }
+        public async Task<IActionResult> GetReport([FromQuery] Period period) =>
+            Ok(await repository.GetReport(period));
 
         [HttpGet("Materials/{POID}")]
-        public async Task<IEnumerable<ReportMaterial>> GetCommandMaterials(string POID) {
-            return await repository.GetMaterialsForCommand(POID);
-        }
+        public async Task<IActionResult> GetCommandMaterials(string POID) =>
+            Ok(await repository.GetMaterialsForCommand(POID));
 
         [HttpGet("Materials/{POID}/{pail}")]
-        public async Task<IEnumerable<ReportMaterial>> GetPailMaterials(string POID, int pail) {
-            return await repository.GetMaterialsForPail(POID, pail);
-        }
-
+        public async Task<IActionResult> GetPailMaterials(string POID, int pail) =>
+            Ok(await repository.GetMaterialsForPail(POID, pail));
     }
 }

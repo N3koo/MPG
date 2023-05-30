@@ -1,7 +1,7 @@
-﻿using DataEntity.Model.Input;
-using DataEntity.Model.Output;
+﻿using MpgWebService.Business.Data.DTO;
 
-using MpgWebService.DTO;
+using DataEntity.Model.Output;
+using DataEntity.Model.Input;
 
 using System.Globalization;
 

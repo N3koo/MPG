@@ -1,13 +1,10 @@
 ﻿using MpgWebService.Business.Interface.Service;
 using MpgWebService.Presentation.Request;
 using MpgWebService.Business.Service;
-using MpgWebService.DTO;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace MpgWebService.Presentation.Controllers {
 
@@ -23,8 +20,5 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Production>> GetResult([FromQuery] Period period) {
-            return await service.GetProductionStatus(period);
-        }
-    }
+        public async Task<IActionResult> GetResult([FromQuery] Period period) =>            Ok(await service.GetProductionStatus(period));    }
 }

@@ -13,8 +13,8 @@ namespace MpgWebService.Business.Interface.Service {
         Task<List<LotDetails>> GetOperationsList(string POID);
         Task<QcLabel> SetQcStatus(QcDetails details);
         Task<List<CorrectionDto>> GetCorrections(QcDetails details);
-        Task<Response> SaveCorrection(POCorrection correction);
-        Task<Response> SaveDosageMaterials(List<POConsumption> materials);
-        Task<Response> ChangeStatus(string POID, string pail, string status);
+        Task<ServiceResponse> SaveCorrection(POCorrection correction);
+        Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials);
+        Task<ServiceResponse> ChangeStatus(string POID, string pail, string status);
     }
 }

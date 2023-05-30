@@ -115,6 +115,15 @@ namespace MPG_Interface.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to http://localhost:51128/.
+        /// </summary>
+        internal static string Debug_URL {
+            get {
+                return ResourceManager.GetString("Debug_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 101.
         /// </summary>
         internal static string Goods_Receipt_Type {
@@ -169,6 +178,15 @@ namespace MPG_Interface.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to http://localhost:8082/.
+        /// </summary>
+        internal static string Release_URL {
+            get {
+                return ResourceManager.GetString("Release_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MES_2022.
         /// </summary>
         internal static string SAP_Pass {
@@ -192,15 +210,6 @@ namespace MPG_Interface.Properties {
         internal static string SAP_User {
             get {
                 return ResourceManager.GetString("SAP_User", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to https://localhost:44376/.
-        /// </summary>
-        internal static string Service_URL {
-            get {
-                return ResourceManager.GetString("Service_URL", resourceCulture);
             }
         }
     }

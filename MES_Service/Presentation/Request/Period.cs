@@ -1,9 +1,6 @@
-﻿using MpgWebService.Data.Filter;
-
-using System;
+﻿using System;
 
 namespace MpgWebService.Presentation.Request {
-
     public class Period {
         public DateTime StartDate { set; get; }
         public DateTime EndDate { set; get; }

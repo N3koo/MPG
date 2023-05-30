@@ -5,11 +5,11 @@ using MpgWebService.Repository.Command;
 using MpgWebService.Business.Data.DTO;
 using MpgWebService.Data.Extension;
 using MpgWebService.Properties;
-using MpgWebService.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Business.Service {
 
@@ -25,7 +25,7 @@ namespace MpgWebService.Business.Service {
             this.repository = repository;
         }
 
-        public async Task<Response> BlockCommand(string POID) {
+        public async Task<ServiceResponse> BlockCommand(string POID) {
             var result = await repository.BlockCommand(POID);
             result.CheckErrors();
             return result;
@@ -35,15 +35,15 @@ namespace MpgWebService.Business.Service {
             return await repository.CheckPriority(priority);
         }
 
-        public async Task<Response> CloseCommand(string POID) {
+        public async Task<ServiceResponse> CloseCommand(string POID) {
             var response = await repository.CloseCommand(POID);
             response.CheckErrors();
             return response;
         }
 
-        public async Task<Response> DownloadMaterials() {
+        public async Task<ServiceResponse> DownloadMaterials() {
             var data = Settings.Default.Update;
-            Response response;
+            ServiceResponse response;
 
             if (string.IsNullOrEmpty(data)) {
                 response = await repository.DownloadMaterials();
@@ -69,13 +69,13 @@ namespace MpgWebService.Business.Service {
             return await repository.GetQC(POID);
         }
 
-        public async Task<Response> StartCommand(StartCommand qc) {
+        public async Task<ServiceResponse> StartCommand(StartCommand qc) {
             var result = await repository.StartCommand(qc);
             result.CheckErrors();
             return result;
         }
 
-        public async Task<Response> StartPartialProduction(string POID) {
+        public async Task<ServiceResponse> StartPartialProduction(string POID) {
             var result = await repository.PartialProduction(POID);
             result.CheckErrors();
             return result;

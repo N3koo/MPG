@@ -1,4 +1,4 @@
-﻿namespace MpgWebService.Business.Data.DTO {
+﻿namespace MpgWebService.Presentation.Response {
     public record LotDetails {
         public string OPNO { init; get; }
         public string OpDescr { init; get; }

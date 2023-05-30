@@ -136,6 +136,9 @@
     <value>261</value>
     <comment>Default value for the consumption order</comment>
   </data>
+  <data name="Debug_URL" xml:space="preserve">
+    <value>http://localhost:51128/</value>
+  </data>
   <data name="Goods_Receipt_Type" xml:space="preserve">
     <value>101</value>
     <comment>Default value for the receipt order</comment>
@@ -156,6 +159,9 @@
   <data name="Path_Sqlite" xml:space="preserve">
     <value>E:\Work\C#\Local.sqlite</value>
   </data>
+  <data name="Release_URL" xml:space="preserve">
+    <value>http://localhost:8082/</value>
+  </data>
   <data name="SAP_Pass" xml:space="preserve">
     <value>MES_2022</value>
   </data>
@@ -164,8 +170,5 @@
   </data>
   <data name="SAP_User" xml:space="preserve">
     <value>USERMES</value>
-  </data>
-  <data name="Service_URL" xml:space="preserve">
-    <value>https://localhost:44376/</value>
   </data>
 </root>

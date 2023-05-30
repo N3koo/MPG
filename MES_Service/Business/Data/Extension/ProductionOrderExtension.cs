@@ -1,5 +1,5 @@
-﻿using MpgWebService.Properties;
-using MpgWebService.DTO;
+﻿using MpgWebService.Business.Data.DTO;
+using MpgWebService.Properties;
 
 using DataEntity.Model.Input;
 
