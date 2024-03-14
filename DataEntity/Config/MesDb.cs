@@ -6,6 +6,7 @@ using FluentNHibernate.Cfg;
 
 using NHibernate.Tool.hbm2ddl;
 using NHibernate;
+using DataEntity.Properties;
 
 namespace DataEntity.Config {
 
@@ -38,11 +39,12 @@ namespace DataEntity.Config {
         public ISession GetSession() {
 
             if (_factory == null) {
+                var settings = Settings.Default;
                 _factory = Fluently.Configure()
-                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(Properties.Resources.MES_Server)
-                    .Database(Properties.Resources.MES_Database)
-                    .Username(Properties.Resources.MES_User)
-                    .Password(Properties.Resources.MES_Pass))
+                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(settings.MES_Production)
+                    .Database(settings.MES_Database)
+                    .Username(settings.MES_Production_User)
+                    .Password(settings.MES_Production_Pass))
                     .ShowSql())
                     .Mappings(m => {
                         _ = m.FluentMappings.AddFromAssemblyOf<MaterialDataUOMS>();
@@ -78,9 +80,7 @@ namespace DataEntity.Config {
         /// Destructor that closes the session factory
         /// </summary>
         ~MesDb() {
-            if (_factory != null) {
-                _factory.Close();
-            }
+            _factory?.Close();
         }
     }
 }

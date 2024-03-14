@@ -14,10 +14,11 @@ namespace MpgWebService.Business.Data.Extension {
 
         public static List<ProductionOrderPailStatus> CreatePails(this InputData data, StartCommand command) {
             List<ProductionOrderPailStatus> pails = new();
-            DateTime now = DateTime.Now;
+            var settings = Settings.Default;
+            var now = DateTime.Now;
 
             int size = data.Order.PlannedQtyBUC;
-            data.Order.Status = Resources.CMD_STARTED;
+            data.Order.Status = settings.CMD_STARTED;
             data.Order.Priority = command.Priority.ToString();
 
             Enumerable.Range(1, size).ToList().ForEach(index => {
@@ -25,11 +26,11 @@ namespace MpgWebService.Business.Data.Extension {
                     CreationDate = now,
                     PailNumber = $"{index}",
                     POID = data.Order.POID,
-                    PailStatus = Resources.CMD_SEND,
+                    PailStatus = settings.CMD_SEND,
                     NetWeight = data.OrderFinalItem[0].ItemQty / data.Order.PlannedQtyBUC,
                     GrossWeight = 0,
                     QC = command.QC[index - 1],
-                    Timeout = Resources.MAXIMUM_DOSAGE_TIME,
+                    Timeout = settings.MAXIMUM_DOSAGE_TIME,
                     StartDate = data.Order.PlannedStartDate,
                     EndDate = data.Order.PlannedEndDate,
                     MPGStatus = 1,

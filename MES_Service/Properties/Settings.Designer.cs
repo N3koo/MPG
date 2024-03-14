@@ -12,7 +12,7 @@ namespace MpgWebService.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.9.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -68,6 +68,114 @@ namespace MpgWebService.Properties {
             }
             set {
                 this["Connection"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("BLOC")]
+        public string CMD_BLOCKED {
+            get {
+                return ((string)(this["CMD_BLOCKED"]));
+            }
+            set {
+                this["CMD_BLOCKED"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PRLT")]
+        public string CMD_DONE {
+            get {
+                return ((string)(this["CMD_DONE"]));
+            }
+            set {
+                this["CMD_DONE"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PRLI")]
+        public string CMD_ERROR {
+            get {
+                return ((string)(this["CMD_ERROR"]));
+            }
+            set {
+                this["CMD_ERROR"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PRLQ")]
+        public string CMD_QC {
+            get {
+                return ((string)(this["CMD_QC"]));
+            }
+            set {
+                this["CMD_QC"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ELB")]
+        public string CMD_SEND {
+            get {
+                return ((string)(this["CMD_SEND"]));
+            }
+            set {
+                this["CMD_SEND"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PRLS")]
+        public string CMD_STARTED {
+            get {
+                return ((string)(this["CMD_STARTED"]));
+            }
+            set {
+                this["CMD_STARTED"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("261")]
+        public string CONSUMPTION_TYPE {
+            get {
+                return ((string)(this["CONSUMPTION_TYPE"]));
+            }
+            set {
+                this["CONSUMPTION_TYPE"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public string MAXIMUM_DOSAGE_TIME {
+            get {
+                return ((string)(this["MAXIMUM_DOSAGE_TIME"]));
+            }
+            set {
+                this["MAXIMUM_DOSAGE_TIME"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("101")]
+        public string RECEIPT_TYPE {
+            get {
+                return ((string)(this["RECEIPT_TYPE"]));
+            }
+            set {
+                this["RECEIPT_TYPE"] = value;
             }
         }
     }

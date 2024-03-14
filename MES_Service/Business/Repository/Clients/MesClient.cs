@@ -77,7 +77,7 @@ namespace MpgWebService.Repository.Clients {
 
             var pail = session.Query<ProductionOrderPailStatus>().First(p => p.POID == details.POID && p.PailNumber == details.PailNumber);
             pail.Op_No = details.OpNo;
-            pail.PailStatus = Resources.CMD_QC;
+            pail.PailStatus = Settings.Default.CMD_QC;
             pail.MESStatus = 0;
             pail.MPGStatus = 1;
 
@@ -206,7 +206,7 @@ namespace MpgWebService.Repository.Clients {
             using var transaction = session.BeginTransaction();
 
             var po = session.Query<ProductionOrder>().First(p => p.POID == POID);
-            po.Status = Resources.CMD_DONE;
+            po.Status = Settings.Default.CMD_DONE;
             po.Priority = "-1";
 
             session.Save(SapTransfer.CreateRecord(POID));

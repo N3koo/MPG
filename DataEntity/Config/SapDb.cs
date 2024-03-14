@@ -2,6 +2,7 @@
 
 using System.ServiceModel;
 using System;
+using DataEntity.Properties;
 
 namespace DataEntity.Config {
 
@@ -28,8 +29,9 @@ namespace DataEntity.Config {
         /// <returns>A new client that has access to SAP</returns>
         public static Z_MPGClient GetClient() {
             if (_client == null) {
+                var settings = Settings.Default;
                 BasicHttpBinding binding = new();
-                EndpointAddress address = new(new Uri(Properties.Resources.SAP_Server));
+                EndpointAddress address = new(new Uri(settings.SAP_Server));
 
                 binding.Security.Mode = BasicHttpSecurityMode.TransportCredentialOnly;
                 binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
@@ -42,8 +44,8 @@ namespace DataEntity.Config {
                 binding.Security.Message.ClientCredentialType = BasicHttpMessageCredentialType.UserName;
 
                 _client = new Z_MPGClient(binding, address);
-                _client.ClientCredentials.UserName.UserName = Properties.Resources.SAP_User;
-                _client.ClientCredentials.UserName.Password = Properties.Resources.SAP_Pass;
+                _client.ClientCredentials.UserName.UserName = settings.SAP_User;
+                _client.ClientCredentials.UserName.Password = settings.SAP_Pass;
                 _client.Open();
             }
 
@@ -54,9 +56,7 @@ namespace DataEntity.Config {
         /// Destructor that closes the connection of the client
         /// </summary>
         ~SapDb() {
-            if (_client != null) {
-                _client.Close();
-            }
+            _client?.Close();
         }
     }
 }

@@ -31,8 +31,8 @@ namespace MpgWebService.Repository.Clients {
 
         public async Task<ProductionOrder> BlockCommand(string POID) {
             var po = InputDataCollection.GetCommand(POID);
-            po.Status = Resources.CMD_BLOCKED;
-            var status = await SetCommandStatusAsync(POID, Resources.CMD_BLOCKED); // TODO: Check how to treat this result
+            po.Status = Settings.Default.CMD_BLOCKED;
+            var status = await SetCommandStatusAsync(POID, Settings.Default.CMD_BLOCKED); // TODO: Check how to treat this result
 
             return status ? po : null;
         }
@@ -42,7 +42,7 @@ namespace MpgWebService.Repository.Clients {
 
             var result = await sapClient.Z_UPDTSTATUSPOAsync(new Z_UPDTSTATUSPO {
                 STATUSPO = new ZSTATUSPO[] {
-                    new ZSTATUSPO {
+                    new() {
                         POID = POID,
                         PLANT = "1000",
                         STATUSCODE = status,
@@ -109,7 +109,7 @@ namespace MpgWebService.Repository.Clients {
         public async Task<List<ProductionOrder>> GetCommandsAsync(Period period) {
             InputDataCollection.Clear();
             var task = sapClient.Z_PRODORDERSAsync(new Z_PRODORDERS {
-                PLANT = Resources.PLANT,
+                PLANT = Settings.Default.Plant,
                 START_DATE = period.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 END_DATE = period.EndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             });

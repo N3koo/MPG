@@ -115,7 +115,7 @@ namespace MPG_Interface.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://localhost:51128/.
+        ///   Looks up a localized string similar to http://localhost:9999/.
         /// </summary>
         internal static string Debug_URL {
             get {

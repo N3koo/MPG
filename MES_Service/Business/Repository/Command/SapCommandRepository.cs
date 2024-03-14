@@ -105,9 +105,7 @@ namespace MpgWebService.Repository.Command {
         public Task<string> GetQC(string POID) {
             var result = SapClient.Client.GetQC(POID);
 
-            if (result == null) {
-                result = MpgClient.Client.GetQc(POID);
-            }
+            result ??= MpgClient.Client.GetQc(POID);
 
             return Task.FromResult(result);
         }
@@ -131,7 +129,7 @@ namespace MpgWebService.Repository.Command {
                 return ServiceResponse.CreateErrorMpg($"Nu au fost inserate datele in MPG pentru comanda {qc.POID}");
             }
 
-            var result = await SapClient.Client.SetCommandStatusAsync(qc.POID, Resources.CMD_STARTED);
+            var result = await SapClient.Client.SetCommandStatusAsync(qc.POID, Settings.Default.CMD_STARTED);
 
             if (!result) {
                 return ServiceResponse.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {qc.POID}");

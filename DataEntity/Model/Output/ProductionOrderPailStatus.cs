@@ -32,11 +32,11 @@ namespace DataEntity.Model.Output {
             CreationDate = DateTime.Now,
             PailNumber = $"{index}",
             POID = data.Order.POID,
-            PailStatus = Resources.CMD_ELB,
+            PailStatus = Settings.Default.CMD_ELB,
             NetWeight = 0,
             GrossWeight = data.OrderFinalItem[0].ItemQty / data.Order.PlannedQtyBUC,
             QC = qc[index - 1],
-            Timeout = Resources.MaximumDosageTime,
+            Timeout = Settings.Default.MaximumDosageTime,
             StartDate = data.Order.PlannedStartDate,
             EndDate = data.Order.PlannedEndDate,
             MPGRowUpdated = DateTime.Now

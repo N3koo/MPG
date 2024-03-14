@@ -6,6 +6,7 @@ using FluentNHibernate.Cfg;
 
 using NHibernate.Tool.hbm2ddl;
 using NHibernate;
+using DataEntity.Properties;
 
 namespace DataEntity.Config {
     public class MpgDb {
@@ -32,11 +33,12 @@ namespace DataEntity.Config {
         public ISession GetSession() {
 
             if (factory == null) {
+                var settings = Settings.Default;
                 factory = Fluently.Configure()
-                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(Properties.Resources.MPG_Server)
-                    .Database(Properties.Resources.MPG_Database)
-                    .Username(Properties.Resources.MPG_User)
-                    .Password(Properties.Resources.MPG_Pass))
+                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(settings.MPG_Server)
+                    .Database(settings.MPG_Database)
+                    .Username(settings.MPG_User)
+                    .Password(settings.MPG_Pass))
                     .ShowSql())
                     .Mappings(m => {
                         _ = m.FluentMappings.AddFromAssemblyOf<MaterialDataUOMS>();
@@ -71,9 +73,7 @@ namespace DataEntity.Config {
         /// Destructor that closes the session factory
         /// </summary>
         ~MpgDb() {
-            if (factory != null) {
-                factory.Close();
-            }
+            factory?.Close();
         }
     }
 }

@@ -137,7 +137,7 @@
     <comment>Default value for the consumption order</comment>
   </data>
   <data name="Debug_URL" xml:space="preserve">
-    <value>http://localhost:51128/</value>
+    <value>http://localhost:9999/</value>
   </data>
   <data name="Goods_Receipt_Type" xml:space="preserve">
     <value>101</value>

@@ -6,6 +6,7 @@ using NHibernate;
 
 using System.Collections.Generic;
 using System.Linq;
+using DataEntity.Properties;
 
 namespace DataEntity.Model.Types {
 
@@ -64,7 +65,7 @@ namespace DataEntity.Model.Types {
 
             int size = (int)Order.PlannedQtyBUC;
             Order.Priority = priority.ToString(); //TODO: Remove this
-            Order.Status = Properties.Resources.CMD_PRLS;
+            Order.Status = Settings.Default.CMD_PRLS;
             Enumerable.Range(1, size).ToList().ForEach(data => {
                 var local = ProductionOrderPailStatus.CreatePail(this, data, qc);
                 pails.Add(local);

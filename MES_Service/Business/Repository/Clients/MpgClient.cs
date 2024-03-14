@@ -114,13 +114,13 @@ namespace MpgWebService.Repository.Clients {
                 return 2;
             }
 
-            var count = session.Query<ProductionOrderPailStatus>().Count(p => p.POID == POID && p.PailStatus == Resources.CMD_SEND);
+            var count = session.Query<ProductionOrderPailStatus>().Count(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_SEND);
 
             if (po.PlannedQtyBUC != count) {
                 return 1;
             }
 
-            po.Status = Resources.CMD_BLOCKED;
+            po.Status = Settings.Default.CMD_BLOCKED;
             po.Priority = "-1";
             po.MPGStatus = 1;
             po.MPGRowUpdated = DateTime.Now;
@@ -148,7 +148,7 @@ namespace MpgWebService.Repository.Clients {
             using var transaction = session.BeginTransaction();
 
             var result = session.Query<ProductionOrder>().First(p => p.POID == POID);
-            result.Status = Resources.CMD_DONE;
+            result.Status = Settings.Default.CMD_DONE;
             result.Priority = "-1";
 
             session.Update(result);
@@ -162,7 +162,7 @@ namespace MpgWebService.Repository.Clients {
             using var transaction = session.BeginTransaction();
 
             var po = session.Query<ProductionOrder>().First(p => p.POID == POID);
-            var pails = session.Query<ProductionOrderPailStatus>().Where(p => p.POID == POID && p.PailStatus == Resources.CMD_DONE).ToList();
+            var pails = session.Query<ProductionOrderPailStatus>().Where(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_DONE).ToList();
             var position = session.Query<ProductionOrderFinalItem>().First(p => p.POID == POID).ItemPosition;
             var ldm = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
             return Tuple.Create(po, pails, ldm, position);

@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="MES_Service.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="MpgWebService.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="Plant" Type="System.String" Scope="User">
@@ -13,6 +13,33 @@
     </Setting>
     <Setting Name="Connection" Type="System.String" Scope="User">
       <Value Profile="(Default)">MES</Value>
+    </Setting>
+    <Setting Name="CMD_BLOCKED" Type="System.String" Scope="User">
+      <Value Profile="(Default)">BLOC</Value>
+    </Setting>
+    <Setting Name="CMD_DONE" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLT</Value>
+    </Setting>
+    <Setting Name="CMD_ERROR" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLI</Value>
+    </Setting>
+    <Setting Name="CMD_QC" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLQ</Value>
+    </Setting>
+    <Setting Name="CMD_SEND" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ELB</Value>
+    </Setting>
+    <Setting Name="CMD_STARTED" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLS</Value>
+    </Setting>
+    <Setting Name="CONSUMPTION_TYPE" Type="System.String" Scope="User">
+      <Value Profile="(Default)">261</Value>
+    </Setting>
+    <Setting Name="MAXIMUM_DOSAGE_TIME" Type="System.String" Scope="User">
+      <Value Profile="(Default)">30</Value>
+    </Setting>
+    <Setting Name="RECEIPT_TYPE" Type="System.String" Scope="User">
+      <Value Profile="(Default)">101</Value>
     </Setting>
   </Settings>
 </SettingsFile>

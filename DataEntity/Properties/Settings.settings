@@ -1,0 +1,69 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DataEntity.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="CMD_BLOCK" Type="System.String" Scope="User">
+      <Value Profile="(Default)">BLOC</Value>
+    </Setting>
+    <Setting Name="CMD_ELB" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ELB</Value>
+    </Setting>
+    <Setting Name="CMD_PRLI" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLI</Value>
+    </Setting>
+    <Setting Name="CMD_PRLS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PRLS</Value>
+    </Setting>
+    <Setting Name="CMD_PLRT" Type="System.String" Scope="User">
+      <Value Profile="(Default)">PLRT</Value>
+    </Setting>
+    <Setting Name="MaximumDosageTime" Type="System.String" Scope="User">
+      <Value Profile="(Default)">30</Value>
+    </Setting>
+    <Setting Name="MES_Database" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MPGINTERFACE</Value>
+    </Setting>
+    <Setting Name="MES_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Kober2019!@#</Value>
+    </Setting>
+    <Setting Name="MES_Production" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.10.30</Value>
+    </Setting>
+    <Setting Name="MES_Production_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Kober.1234</Value>
+    </Setting>
+    <Setting Name="MES_Production_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sa</Value>
+    </Setting>
+    <Setting Name="MES_Server" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.10.14</Value>
+    </Setting>
+    <Setting Name="MES_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MPG</Value>
+    </Setting>
+    <Setting Name="MPG_Database" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MPG</Value>
+    </Setting>
+    <Setting Name="MPG_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Kober2022!</Value>
+    </Setting>
+    <Setting Name="MPG_Server" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.10.26</Value>
+    </Setting>
+    <Setting Name="MPG_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)">sa</Value>
+    </Setting>
+    <Setting Name="Path_Sqlite" Type="System.String" Scope="User">
+      <Value Profile="(Default)">E:\Local.sqlite</Value>
+    </Setting>
+    <Setting Name="SAP_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MES_2022</Value>
+    </Setting>
+    <Setting Name="SAP_Server" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://DEZV-ECC.kober.ro:8000/sap/bc/srt/rfc/sap/z_mpg/200/z_mpg/z_mpg</Value>
+    </Setting>
+    <Setting Name="SAP_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)">USERMES</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
