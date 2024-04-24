@@ -7,7 +7,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 
+using System.Text.Json;
 using System.IO;
+using Serilog;
 
 namespace MpgWebService {
 
@@ -42,20 +44,20 @@ namespace MpgWebService {
                 app.UseExceptionHandler(handler => {
                     handler.Run(async context => {
                         var exception = context.Features.Get<IExceptionHandlerPathFeature>();
+                        var jsonMessage = JsonSerializer.Serialize(exception.Error.Message);
 
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(exception.Error.Message);
+
+                        await context.Response.WriteAsync(jsonMessage);
                     });
                 });
 
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
-
             app.UseRouting();
-
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => {

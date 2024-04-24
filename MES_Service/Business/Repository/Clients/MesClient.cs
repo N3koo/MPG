@@ -1,8 +1,8 @@
 ﻿using MpgWebService.Business.Data.Extension;
+using MpgWebService.Presentation.Response;
 using MpgWebService.Presentation.Request;
-using MpgWebService.Business.Data.DTO;
+using MpgWebService.Business.Data.Utils;
 using MpgWebService.Properties;
-using NHibernate.Transform;
 
 using DataEntity.Model.Output;
 using DataEntity.Model.Input;
@@ -13,14 +13,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
+using NHibernate.Transform;
+
 namespace MpgWebService.Repository.Clients {
 
     public class MesClient {
 
-        private readonly static string CorrectionQuery = "SELECT a.* FROM MES2MPG_Correction a INNER JOIN MES2MPG_QualityCheck b ON a.CorrectionID = b.ID " +
-            "WHERE b.ID = (:id) AND a.MPGStatus IS NULL";
+        private readonly static string CorrectionQuery = "SELECT stock.MPGHead, correction.RawMaterialID, correction.ItemQuantity, correection.ItemUOM " +
+            "FROM MES2MPG_Correction correction INNER JOIN MES2MPG_StockVessel stock ON stock.MaterialID = correction.RawMaterialID " +
+            "WHERE correction.CorrectionID = (:id)";
 
-        private readonly static string LabelQuery = "SELECT a.PlantID, a.MaterialID, c.ItemQty, a.PODescription, a.POID, b.PailNumber, a.KoberLot, b.MES_Sample_ID, b.Op_No " +
+        private readonly static string LabelQuery = "SELECT a.PlantID, a.MaterialID, c.ItemQty, b.StartDate, a.PODescription, a.POID, b.PailNumber, a.KoberLot, b.MES_Sample_ID, b.Op_No, c.OpDescr" +
             "FROM MES2MPG_ProductionOrders a INNER JOIN MPG2MES_ProductionOrderPailStatus b ON a.POID = b.POID INNER JOIN MES2MPG_ProductionOrderFinalItems c ON a.POID = c.POID " +
             "WHERE b.PailNumber = (:pail) AND a.POID = '(:POID)'";
 
@@ -34,14 +37,11 @@ namespace MpgWebService.Repository.Clients {
                 p.PlannedEndDate <= period.EndDate && p.Status == "ELB").ToList();
         }
 
-        public void SaveDosageMaterials(List<ProductionOrderConsumption> consumption) {
+        public void SaveDosageMaterials(List<ProductionOrderConsumption> materials) {
             using var session = MesDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            consumption.ForEach(item => {
-                session.Save(item);
-            });
-
+            materials.ForEach(item => session.Save(item));
             transaction.Commit();
         }
 
@@ -52,52 +52,57 @@ namespace MpgWebService.Repository.Clients {
             return session.Query<ProductionOrderLotHeader>().First(p => p.POID == POID)?.PozQC;
         }
 
-        public void SaveCorrection(ProductionOrderCorection correction) {
+        public ProductionOrderCorection SaveCorrection(POConsumption materials) {
             using var session = MesDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
+
+            var lastId = session.Query<QualityCheck>().OrderBy(p => p.ID).First();
+            var correction = Utils.CreateCorrection(materials, lastId);
 
             session.Save(correction);
             transaction.Commit();
+
+            return correction;
         }
 
-        public void ConsumeMaterials(List<POConsumption> materials) {
+        public QcLabelDto SetQcStatus(string POID, int pailNumber) {
             using var session = MesDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            materials.ForEach(item => {
-                session.Save(POConsumption.CreateConsumption(item));
-            });
+            var details = Utils.GetOperations(session, POID);
 
-            transaction.Commit();
+            foreach(var detail in details) {
+                if(Utils.CheckOperation(session, POID, pailNumber, detail.OPNO)) {
+                    continue;
+                }
+
+                var pail = session.Query<ProductionOrderPailStatus>().First(p => p.POID == POID && p.PailNumber == pailNumber.ToString());
+
+                pail.PailStatus = "PRLQ";
+                pail.Op_No = detail.OPNO;
+                pail.MESStatus = 0;
+                pail.MPGStatus = 1;
+
+                session.Update(pail);
+                transaction.Commit();
+
+                var label = session.CreateSQLQuery(LabelQuery)
+                    .SetResultTransformer(Transformers.AliasToBean<QcLabelDto>())
+                    .SetInt32("pail", pailNumber)
+                    .SetString("POID", POID).List<QcLabelDto>();
+
+                return label.Count == 0 ? null : label[0];
+            }
+
+            return null;
         }
 
-        public QcLabel SetQcStatus(QcDetails details) {
+        public List<MaterialDto> GetCorrections(string POID, int pailNumber, string opNo) {
             using var session = MesDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            var pail = session.Query<ProductionOrderPailStatus>().First(p => p.POID == details.POID && p.PailNumber == details.PailNumber);
-            pail.Op_No = details.OpNo;
-            pail.PailStatus = Settings.Default.CMD_QC;
-            pail.MESStatus = 0;
-            pail.MPGStatus = 1;
-
-            session.Update(pail);
-            transaction.Commit();
-
-            var label = session.CreateSQLQuery(LabelQuery)
-                .SetResultTransformer(Transformers.AliasToBean<QcLabel>())
-                .SetString("pail", details.PailNumber)
-                .SetString("POID", details.POID).List<QcLabel>();
-
-            return label.Count == 0 ? null : label[0];
-        }
-
-        public List<Correction> GetCorrections(QcDetails details) {
-            using var session = MesDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            var qc = session.Query<QualityCheck>().FirstOrDefault(p => p.POID == details.POID && p.OpNo == details.OpNo
-            && p.PailNumber == int.Parse(details.PailNumber) && p.MPGStatus == null);
+            var qc = session.Query<QualityCheck>().FirstOrDefault(p => p.POID == POID && p.OpNo == opNo
+            && p.PailNumber == pailNumber && p.MPGStatus == null);
 
             if (qc == null) {
                 return new();
@@ -113,18 +118,9 @@ namespace MpgWebService.Repository.Clients {
                 return new();
             }
 
-            var query = (List<Correction>)session.CreateSQLQuery(CorrectionQuery)
-                .SetResultTransformer(Transformers.AliasToBean<Correction>())
-                .SetInt64("id", qc.ID).List<Correction>();
-
-            query.ForEach(item => {
-                item.MPGStatus = 1;
-                item.MPGRowUpdated = DateTime.Now;
-                session.Update(item);
-            });
-
-            transaction.Commit();
-            return query;
+            return session.CreateSQLQuery(CorrectionQuery)
+                .SetResultTransformer(Transformers.AliasToBean<MaterialDto>())
+                .SetInt64("id", qc.ID).List<MaterialDto>().ToList();
         }
 
         public void ChangeStatus(string POID, string pailIndex, string status) {

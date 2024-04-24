@@ -16,7 +16,7 @@ namespace DataEntity.Model.Input {
         public virtual string Param { set; get; }
         public virtual string ParamDescr { set; get; }
         public virtual string Value { set; get; }
-        //public virtual string ValueDescr { set; get; }
+        public virtual string ValueDescr { set; get; }
 
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace DataEntity.Model.Input {
             Param = data.PARAM;
             ParamDescr = data.PARAMDESCR;
             Value = data.VALUE;
-            //ValueDescr = data.VALUEDESCR;
+            ValueDescr = data.VALUEDESCR;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace DataEntity.Model.Input {
 
             _ = Map(x => x.Class).Nullable();
             _ = Map(x => x.ParamDescr).Nullable();
-            //_ = Map(x => x.ValueDescr).Nullable();
+            _ = Map(x => x.ValueDescr).Nullable();
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using DataEntity.Model.Output;
 using DataEntity.Model.Input;
+using DataEntity.Properties;
 
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Cfg;
 
 using NHibernate.Tool.hbm2ddl;
 using NHibernate;
-using DataEntity.Properties;
 
 namespace DataEntity.Config {
 

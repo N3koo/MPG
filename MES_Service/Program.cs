@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace MpgWebService {
     public class Program {
@@ -11,6 +12,7 @@ namespace MpgWebService {
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+            .UseSerilog();
     }
 }

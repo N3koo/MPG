@@ -45,7 +45,6 @@ namespace DataEntity.Model.Output {
         public virtual int? MESStatus { set; get; }
         public virtual string ErrorMessage { set; get; }
         public virtual DateTime? MPGRowUpdated { set; get; }
-
     }
 
     public class ProductionOrderCorectionMap : ClassMap<ProductionOrderCorection> {

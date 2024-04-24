@@ -1,17 +1,23 @@
-﻿using MpgWebService.Presentation.Response;
+﻿using MpgWebService.Business.Data.Exceptions;
+using MpgWebService.Presentation.Response;
 using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Clients;
-using MpgWebService.Business.Data.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Linq;
-using System;
 
 namespace MpgWebService.Repository.Command {
 
     public class MpgRepository : IMpgRepository {
+
+        public Task<PailDto> GetAvailablePail() {
+            var pail = MpgClient.Client.GetAvailablePail() ?? throw new MpgException("No pail available");
+
+            MesClient.Client.ChangeStatus(pail.POID, pail.PailNumber, pail.PailStatus);
+
+            return Task.FromResult(pail);
+        }
 
         public Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status) {
             MpgClient.Client.ChangeStatus(POID, indexPail, status);
@@ -19,45 +25,35 @@ namespace MpgWebService.Repository.Command {
 
             return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
         }
-
-        public Task<List<CorrectionDto>> GetCorrections(QcDetails details) {
-            var result = MesClient.Client.GetCorrections(details).Select(p => CorrectionDto.FromCorrection(p));
-            return Task.FromResult(result.ToList());
-        }
-
-
-
-        public Task<ServiceResponse> SaveCorrection(POCorrection correction) {
-            var po = POCorrection.CreatePOCorrection(correction);
-
-            MesClient.Client.SaveCorrection(po);
-            MpgClient.Client.SaveCorrection(po);
+        
+        public Task<ServiceResponse> SaveCorrection(POConsumption materials) {
+            var result = MesClient.Client.SaveCorrection(materials);
+            MpgClient.Client.SaveCorrection(materials, result);
 
             return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
         }
 
-        public Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials) {
-            var consumption = materials.Select(p => POConsumption.CreateConsumption(p)).ToList();
-
-            MesClient.Client.SaveDosageMaterials(consumption);
-            MpgClient.Client.SaveDosageMaterials(consumption);
+        public Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) {
+            var result = MpgClient.Client.SaveDosageMaterials(materials);
+            MesClient.Client.SaveDosageMaterials(result);
 
             return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost salvate"));
         }
 
-        public Task<object> GetAvailablePail() {
-            throw new NotImplementedException();
-            //Task.FromResult(MpgClient.Client.GetAvailablePail());
+        public Task<QcLabelDto> GetQcLabel(string POID, int pailNumber) {
+            var result = MesClient.Client.SetQcStatus(POID, pailNumber) ?? throw new MesException("Could not set QC");
 
+            MpgClient.Client.SetQC(result);
+            return Task.FromResult(result);
         }
 
-        public Task<List<Materials>> GetMaterials(string POID) =>
-            Task.FromResult(MpgClient.Client.GetMaterials(POID).Select(p => Materials.FromBom(p)).ToList());
+        public Task<List<MaterialDto>> GetCorrections(string POID, int pailNumber, string opNo) =>
+            Task.FromResult(MesClient.Client.GetCorrections(POID, pailNumber, opNo));
 
-        public Task<QcLabel> SetQcStatus(QcDetails details) =>
-            Task.FromResult(MesClient.Client.SetQcStatus(details));
+        public Task<LabelDto> GetLabel(string POID) =>
+            Task.FromResult(MpgClient.Client.GetLabelData(POID));
 
-        public Task<List<LotDetails>> GetOperationsList(string POID) =>
-            Task.FromResult(MpgClient.Client.GetOperations(POID));
+        public Task<List<MaterialDto>> GetMaterials(string POID) =>
+            Task.FromResult(MpgClient.Client.GetMaterials(POID));
     }
 }

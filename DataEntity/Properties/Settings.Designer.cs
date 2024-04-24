@@ -274,5 +274,53 @@ namespace DataEntity.Properties {
                 this["SAP_User"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
+        public string Docker_Server {
+            get {
+                return ((string)(this["Docker_Server"]));
+            }
+            set {
+                this["Docker_Server"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sa")]
+        public string Docker_User {
+            get {
+                return ((string)(this["Docker_User"]));
+            }
+            set {
+                this["Docker_User"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Kober2020!")]
+        public string Docker_Pass {
+            get {
+                return ((string)(this["Docker_Pass"]));
+            }
+            set {
+                this["Docker_Pass"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MPG")]
+        public string Docker_Database {
+            get {
+                return ((string)(this["Docker_Database"]));
+            }
+            set {
+                this["Docker_Database"] = value;
+            }
+        }
     }
 }

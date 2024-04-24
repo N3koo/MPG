@@ -3,12 +3,11 @@ using MpgWebService.Presentation.Response;
 using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Command;
-using MpgWebService.Business.Data.DTO;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MpgWebService.Business.Service {
+namespace MpgWebService.Business.Service { 
 
     public class MpgService : IMpgService {
 
@@ -18,26 +17,13 @@ namespace MpgWebService.Business.Service {
             repository = new MpgRepository();
         }
 
-        public async Task<ServiceResponse> ChangeStatus(string POID, string pail, string status) {
-            var result = await repository.ChangeStatus(POID, pail, status);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<PailDto> GetAvailablePail() => 
+            await repository.GetAvailablePail();
 
-        public async Task<object> GetAvailablePail() {
-            return await repository.GetAvailablePail();
-        }
+        public async Task<LabelDto> GetLabel(string POID) =>
+            await repository.GetLabel(POID);
 
-        public async Task<List<CorrectionDto>> GetCorrections(QcDetails details) {
-            var result = await repository.GetCorrections(details);
-            if (result.Count == 0) {
-                ServiceResponse.CreateErrorMes("Nu exista corectii").CheckErrors();
-            }
-
-            return result;
-        }
-
-        public async Task<List<Materials>> GetMaterials(string POID) {
+        public async Task<List<MaterialDto>> GetMaterials(string POID) {
             var result = await repository.GetMaterials(POID);
             if (result.Count == 0) {
                 ServiceResponse.CreateErrorMes($"Nu exista materiale pentru comanda {POID}").CheckErrors();
@@ -46,38 +32,34 @@ namespace MpgWebService.Business.Service {
             return result;
         }
 
-        public async Task<List<LotDetails>> GetOperationsList(string POID) {
-            var result = await repository.GetOperationsList(POID);
+        public async Task<QcLabelDto> GetQcLabel(string POID, int pailNumber) =>
+            await repository.GetQcLabel(POID, pailNumber);
 
+        public async Task<List<MaterialDto>> GetCorrections(string POID, int pailNumber, string opNo) {
+            var result = await repository.GetCorrections(POID, pailNumber, opNo);
             if (result.Count == 0) {
-                ServiceResponse.CreateErrorMes("Nu exisa pasi de QC").CheckErrors();
+                ServiceResponse.CreateErrorMes("Nu exista corectii").CheckErrors();
             }
 
             return result;
         }
 
-        public async Task<ServiceResponse> SaveCorrection(POCorrection correction) {
+        public async Task<ServiceResponse> SaveCorrection(POConsumption correction) {
             var result = await repository.SaveCorrection(correction);
             result.CheckErrors();
             return result;
         }
 
-        public async Task<ServiceResponse> SaveDosageMaterials(List<POConsumption> materials) {
+        public async Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) {
             var result = await repository.SaveDosageMaterials(materials);
             result.CheckErrors();
             return result;
         }
 
-        public async Task<QcLabel> SetQcStatus(QcDetails details) {
-            var result = await repository.SetQcStatus(details);
-
-            if (result == null) {
-                ServiceResponse.CreateErrorMes("Nu exista corectie").CheckErrors();
-            }
-
+        public async Task<ServiceResponse> ChangeStatus(string POID, string pail, string status) {
+            var result = await repository.ChangeStatus(POID, pail, status);
+            result.CheckErrors();
             return result;
         }
-
-
     }
 }

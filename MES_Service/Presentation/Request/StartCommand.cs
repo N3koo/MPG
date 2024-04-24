@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MpgWebService.Presentation.Request {
+﻿namespace MpgWebService.Presentation.Request {
 
     public class StartCommand {
         public string POID { set; get; }

@@ -1,8 +1,9 @@
-﻿using SAPServices;
+﻿using DataEntity.Properties;
 
 using System.ServiceModel;
 using System;
-using DataEntity.Properties;
+
+using SAPServices;
 
 namespace DataEntity.Config {
 

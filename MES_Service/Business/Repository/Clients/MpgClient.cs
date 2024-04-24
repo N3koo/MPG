@@ -1,4 +1,6 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Response;
+using MpgWebService.Presentation.Request;
+using MpgWebService.Business.Data.Utils;
 using MpgWebService.Properties;
 
 using DataEntity.Model.Output;
@@ -9,11 +11,18 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using MpgWebService.Presentation.Response;
 
-namespace MpgWebService.Repository.Clients {
+using NHibernate.Transform;
+using NHibernate.Util;
+
+namespace MpgWebService.Repository.Clients { 
 
     public class MpgClient {
+
+        private readonly string DOSAGE_MATERIALS = "SELECT stock.MpgHead, bom.Item, bom.ItemQty, bom.ItemQtyUOM " +
+            "FROM MES2MPG_StockVessel stock FULL OUTER JOIN MES2MPG_ProductionOrderBOM bom " +
+            "ON stock.MaterialID = bom.Item " +
+            "WHERE bom.POID = ?";
 
         public readonly static MpgClient Client = new();
 
@@ -24,60 +33,54 @@ namespace MpgWebService.Repository.Clients {
             return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
         }
 
-        public void SaveCorrection(ProductionOrderCorection correction) {
+        public void SaveCorrection(POConsumption materials, ProductionOrderCorection correction) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
+            Utils.UpdateMaterials(session, materials);
             session.Save(correction);
             transaction.Commit();
         }
 
-        public ProductionOrderPailStatus GetAvailablePail() {
+        public PailDto GetAvailablePail() {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            throw new NotImplementedException();
+            var order = session.Query<ProductionOrder>().OrderBy(p => p.Priority).First();
+            var pail = session.Query<ProductionOrderPailStatus>().Where(p => p.POID == order.POID && p.PailStatus == "ELB").OrderBy(p => p.PailNumber).First();
 
-        }
-
-        public void ConsumeMaterials(List<POConsumption> materials) {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            materials.ForEach(item => {
-                session.Save(POConsumption.CreateConsumption(item));
-            });
+            pail.PailStatus = "PRLS";
 
             transaction.Commit();
+
+            return PailDto.FromPailStatus(pail);
         }
 
-        public List<LotDetails> GetOperations(string POID) {
+        public List<ProductionOrderConsumption> SaveDosageMaterials(POConsumption consumption) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrderLotDetail>().Where(p => p.POID == POID).OrderBy(p => p.OpNo)
-                .GroupBy(p => new { p.OpNo, p.OpDescr })
-                .Select(p => new LotDetails { OPNO = p.Key.OpNo, OpDescr = p.Key.OpDescr }).ToList();
-        }
+            var items = consumption.Materials.Select(p => p.Item).ToList();
+            var data = session.QueryOver<ProductionOrderBom>()
+                .WhereRestrictionOn(p => p.Item)
+                .IsIn(items)
+                .And(p => p.POID == consumption.POID)
+                .List<ProductionOrderBom>().ToList();
 
-        public void SaveDosageMaterials(List<ProductionOrderConsumption> consumption) {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+            var result = Utils.CreateConsumption(consumption, data);
 
-            consumption.ForEach(item => {
-                session.Save(item);
-            });
-
+            result.ForEach(item => session.Save(item));
             transaction.Commit();
-        }
 
+            return result;
+        }
+        
         public ProductionOrder GetCommand(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             return session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
         }
-
 
         public bool CheckPriority(string priority) {
             using var session = MpgDb.Instance.GetSession();
@@ -93,18 +96,53 @@ namespace MpgWebService.Repository.Clients {
             return session.Query<ProductionOrderLotHeader>().FirstOrDefault(p => p.POID == POID)?.PozQC;
         }
 
-        public List<ProductionOrderBom> GetMaterials(string POID) {
+        public List<MaterialDto> GetMaterials(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var quantity = session.Query<ProductionOrder>().First(p => p.POID == POID).PlannedQtyBUC;
-            var materials = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
-            materials.ForEach(item => item.ItemQty /= quantity);
+            var materials = session.CreateSQLQuery(DOSAGE_MATERIALS)
+                .SetResultTransformer(Transformers.AliasToBean<MaterialDto>())
+                .SetString(0, POID).List<MaterialDto>().Where(p => p.ItemQty != 1).ToList();
 
+            materials.ForEach(item => item.ItemQty /= quantity);
             return materials;
         }
+        
+        public LabelDto GetLabelData(string POID) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
 
+            var result = new LabelDto();
+            var production = session.Query<ProductionOrder>().First(p => p.POID == POID);
+            var material = session.Query<MaterialData>().First(p => p.MaterialID == production.MaterialID);
+            var pail = session.Query<ProductionOrderPailStatus>().First(p => p.POID == POID);
+            var details = session.Query<ProductionOrderLotDetail>().First(p => p.POID == POID);
 
+            result.SetMaterialDetails(material, pail);
+            result.SetProductionDetails(production);
+            result.SetLimits(details);
+
+            result.RiskPhrases = session.Query<RiskPhrase>().FirstOrDefault(p => p.Material == material.MaterialID);
+
+            result.ProductOrigin = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000028"
+                && p.ParamDescr == "MEDIU DISPERSIE" && p.MaterialID == material.MaterialID);
+
+            result.Diluent = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000025"
+                && p.ParamDescr == "DILUANT RECOMANDAT" && p.MaterialID == material.MaterialID);
+
+            result.Temperature = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000015"
+                && p.ParamDescr == "CONDITII DE DEPOZITARE" && p.MaterialID == material.MaterialID);
+
+            result.Hardener = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000029"
+                && p.ParamDescr == "INTARITOR UNIVERSAL" && p.MaterialID == material.MaterialID);
+
+            result.Winter = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000030"
+                && p.ParamDescr == "INTARITOR IARNA" && p.MaterialID == material.MaterialID);
+
+            return result;
+        }
+        
         public int BlockCommand(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
@@ -129,6 +167,20 @@ namespace MpgWebService.Repository.Clients {
             transaction.Commit();
 
             return 0;
+        }
+
+        public void SetQC(QcLabelDto label) {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            var pail = session.Query < ProductionOrderPailStatus>().First(p => p.POID == label.POID && p.PailNumber == label.PailNumber);
+
+            pail.PailStatus = "PRLQ";
+            pail.Op_No = label.OpQM;
+
+
+            session.Update(pail);
+            transaction.Commit();
         }
 
         public ServiceResponse CreateCommand(ProductionOrder po) {

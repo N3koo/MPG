@@ -1,12 +1,12 @@
 ﻿using DataEntity.Model.Output;
 using DataEntity.Model.Input;
+using DataEntity.Properties;
 
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Cfg;
 
 using NHibernate.Tool.hbm2ddl;
 using NHibernate;
-using DataEntity.Properties;
 
 namespace DataEntity.Config {
     public class MpgDb {
@@ -35,10 +35,10 @@ namespace DataEntity.Config {
             if (factory == null) {
                 var settings = Settings.Default;
                 factory = Fluently.Configure()
-                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(settings.MPG_Server)
-                    .Database(settings.MPG_Database)
-                    .Username(settings.MPG_User)
-                    .Password(settings.MPG_Pass))
+                    .Database(MsSqlConfiguration.MsSql7.ConnectionString(c => c.Server(settings.Docker_Server)
+                    .Database(settings.Docker_Database)
+                    .Username(settings.Docker_User)
+                    .Password(settings.Docker_Pass))
                     .ShowSql())
                     .Mappings(m => {
                         _ = m.FluentMappings.AddFromAssemblyOf<MaterialDataUOMS>();
