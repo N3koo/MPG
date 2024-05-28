@@ -1,5 +1,7 @@
-﻿using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Presentation.Response;
 using MpgWebService.Business.Data.Utils;
 using MpgWebService.Properties;
 
@@ -15,7 +17,7 @@ using System;
 using NHibernate.Transform;
 using NHibernate.Util;
 
-namespace MpgWebService.Repository.Clients { 
+namespace MpgWebService.Repository.Clients {
 
     public class MpgClient {
 
@@ -23,6 +25,12 @@ namespace MpgWebService.Repository.Clients {
             "FROM MES2MPG_StockVessel stock FULL OUTER JOIN MES2MPG_ProductionOrderBOM bom " +
             "ON stock.MaterialID = bom.Item " +
             "WHERE bom.POID = ?";
+
+        private readonly string GET_FIRST_PAIL = "SELECT pails.POID, orders.Priority, pails.PailNumber, pails.GrossWeight " +
+            "FROM MPG2MES_ProductionOrderPailStatus pails INNER JOIN MES2MPG_ProductionOrders orders " +
+            "ON orders.POID = pails.POID " +
+            "WHERE orders.Status = 'PRLS' AND pails.QC = '1' AND pails.PailStatus = 'ELB' AND pails.PailNumber = 1 " +
+            "ORDER BY oroders.Priority";
 
         public readonly static MpgClient Client = new();
 
@@ -42,18 +50,24 @@ namespace MpgWebService.Repository.Clients {
             transaction.Commit();
         }
 
-        public PailDto GetAvailablePail() {
+        public PailDto GetAvailablePail(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            var order = session.Query<ProductionOrder>().OrderBy(p => p.Priority).First();
-            var pail = session.Query<ProductionOrderPailStatus>().Where(p => p.POID == order.POID && p.PailStatus == "ELB").OrderBy(p => p.PailNumber).First();
+            var pail = session.Query<ProductionOrderPailStatus>().FirstOrDefault(p => p.POID == POID && p.PailStatus == "ELB");
+            var order = session.Query<ProductionOrder>().First(p => p.POID == POID);
+            var techDetails = session.Query<ProductionOrderTechDetail>().Where(p => p.POID == POID && p.OP_DESCR == "MIXARE_1").ToList();
 
-            pail.PailStatus = "PRLS";
+            return PailDto.FromPailStatus(pail, order, techDetails);
+        }
 
-            transaction.Commit();
+        public PailQCDto GetFirstPail() {
+            using var session = MpgDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
 
-            return PailDto.FromPailStatus(pail);
+            return session.CreateSQLQuery(GET_FIRST_PAIL)
+                .SetResultTransformer(Transformers.AliasToBean<PailQCDto>())
+                .List<PailQCDto>().First();
         }
 
         public List<ProductionOrderConsumption> SaveDosageMaterials(POConsumption consumption) {

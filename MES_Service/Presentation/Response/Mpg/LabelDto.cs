@@ -2,7 +2,7 @@
 using DataEntity.Model.Output;
 using System;
 
-namespace MpgWebService.Presentation.Response {
+namespace MpgWebService.Presentation.Response.Mpg {
 
     public record LabelDto {
 
@@ -19,12 +19,12 @@ namespace MpgWebService.Presentation.Response {
 
         public decimal? GrossWeight { set; get; }
         public decimal PlannedQty { set; get; }
-        public decimal UpperLimit { set; get; }
-        public decimal LowerLimit { set; get; }
+        public decimal? UpperLimit { set; get; }
+        public decimal? LowerLimit { set; get; }
         public decimal? NetWeight { set; get; }
-        
+
         public DateTime StartDate { set; get; }
-        public DateTime Validity {  set; get; }
+        public DateTime Validity { set; get; }
 
         public Classification ProductOrigin { set; get; }
         public Classification Diluent { set; get; }
@@ -59,5 +59,6 @@ namespace MpgWebService.Presentation.Response {
             UpperLimit = details.UpperLimit;
             LowerLimit = details.LowerLimit;
         }
+
     }
 }

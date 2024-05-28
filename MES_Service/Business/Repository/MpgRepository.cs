@@ -1,6 +1,7 @@
-﻿using MpgWebService.Business.Data.Exceptions;
+﻿using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Business.Data.Exceptions;
 using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Clients;
 
@@ -11,14 +12,18 @@ namespace MpgWebService.Repository.Command {
 
     public class MpgRepository : IMpgRepository {
 
-        public Task<PailDto> GetAvailablePail() {
-            var pail = MpgClient.Client.GetAvailablePail() ?? throw new MpgException("No pail available");
-
-            MesClient.Client.ChangeStatus(pail.POID, pail.PailNumber, pail.PailStatus);
+        public Task<PailQCDto> GetQCPail() {
+            var pail = MpgClient.Client.GetFirstPail() ?? throw new MpgException("No pail available");
 
             return Task.FromResult(pail);
         }
 
+        public Task<PailDto> GetAvailablePail(string POID) {
+            var pail = MpgClient.Client.GetAvailablePail(POID) ?? throw new MpgException("No pail available");
+
+            return Task.FromResult(pail);
+        }
+      
         public Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status) {
             MpgClient.Client.ChangeStatus(POID, indexPail, status);
             MesClient.Client.ChangeStatus(POID, indexPail, status);

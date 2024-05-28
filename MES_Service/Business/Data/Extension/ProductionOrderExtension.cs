@@ -1,4 +1,6 @@
-﻿using MpgWebService.Business.Data.DTO;
+﻿using MpgWebService.Presentation.Response.Production;
+using MpgWebService.Presentation.Response.Command;
+using MpgWebService.Presentation.Response.Report;
 using MpgWebService.Properties;
 
 using DataEntity.Model.Input;
@@ -99,8 +101,8 @@ namespace MpgWebService.Data.Extension {
             };
         }
 
-        public static Production AsProductionDto(this ProductionOrder order) {
-            return new Production {
+        public static ProductionDto AsProductionDto(this ProductionOrder order) {
+            return new ProductionDto {
                 POID = order.POID,
                 POID_ID = "-1",
                 Name = order.PODescription,
@@ -112,8 +114,8 @@ namespace MpgWebService.Data.Extension {
             };
         }
 
-        public static ReportCommand AsReportDto(this ProductionOrder item) {
-            return new ReportCommand {
+        public static ReportCommandDto AsReportDto(this ProductionOrder item) {
+            return new ReportCommandDto {
                 POID = item.POID,
                 POID_ID = "-1",
                 Product = item.MaterialID,

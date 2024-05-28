@@ -1,7 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MpgWebService.Business.Data.DTO {
-    public record ReportCommand {
+namespace MpgWebService.Presentation.Response.Report {
+
+    public record ReportCommandDto {
 
         [JsonPropertyName("POID")]
         public string POID { get; init; }

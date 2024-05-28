@@ -1,12 +1,16 @@
-﻿using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Presentation.Response;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MpgWebService.Business.Interface.Service {
+
     public interface IMpgService {
-        Task<PailDto> GetAvailablePail();
+
+        Task<PailQCDto> GetQCPail();
+        Task<PailDto> GetAvailablePail(string POID);
         Task<LabelDto> GetLabel(string POID);
         Task<List<MaterialDto>> GetMaterials(string POID);
         Task<QcLabelDto> GetQcLabel(string POID, int pailNumber);
@@ -14,5 +18,6 @@ namespace MpgWebService.Business.Interface.Service {
         Task<ServiceResponse> SaveCorrection(POConsumption correction);
         Task<ServiceResponse> SaveDosageMaterials(POConsumption materials);
         Task<ServiceResponse> ChangeStatus(string POID, string pailNumber, string status);
+
     }
 }

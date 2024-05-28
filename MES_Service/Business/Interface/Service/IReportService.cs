@@ -1,13 +1,16 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Report;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Business.Interface.Service {
+
     public interface IReportService {
-        Task<IEnumerable<ReportCommand>> GetReport(Period period);
-        Task<IEnumerable<ReportMaterial>> GetMaterialsForCommand(string POID);
-        Task<IEnumerable<ReportMaterial>> GetMaterialsForPail(string POID, int pail);
+    
+        Task<IEnumerable<ReportCommandDto>> GetReport(Period period);
+        Task<IEnumerable<ReportMaterialDto>> GetMaterialsForCommand(string POID);
+        Task<IEnumerable<ReportMaterialDto>> GetMaterialsForPail(string POID, int pail);
+
     }
 }

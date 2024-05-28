@@ -1,4 +1,5 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Business.Data.JoinData;
 
 using DataEntity.Model.Output;
 using DataEntity.Model.Input;
@@ -6,10 +7,11 @@ using DataEntity.Model.Input;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using MpgWebService.Presentation.Response;
+
 using NHibernate;
 
 namespace MpgWebService.Business.Data.Utils {
+
     public class Utils {
 
         public static List<ProductionOrderConsumption> CreateConsumption(POConsumption materials, List<ProductionOrderBom> bom) {

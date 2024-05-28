@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Net.Http;
 using System;
-using log4net;
 
 namespace MPG_Interface.Module.Logic {
 
@@ -27,7 +26,6 @@ namespace MPG_Interface.Module.Logic {
         /// 
         /// </summary>
         public delegate void OnEndCall();
-
 
         public event OnStartCall StartCall;
 

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System;
 
-namespace MpgWebService.Business.Data.DTO {
+namespace MpgWebService.Presentation.Response.Command { 
 
     public record ProductionOrderDto {
 

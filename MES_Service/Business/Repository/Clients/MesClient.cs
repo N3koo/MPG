@@ -1,6 +1,7 @@
-﻿using MpgWebService.Business.Data.Extension;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Business.Data.Extension;
 using MpgWebService.Business.Data.Utils;
 using MpgWebService.Properties;
 
@@ -14,6 +15,7 @@ using System.Linq;
 using System;
 
 using NHibernate.Transform;
+using NHibernate.Util;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -30,18 +32,28 @@ namespace MpgWebService.Repository.Clients {
         public static readonly MesClient Client = new();
 
         public List<ProductionOrder> GetCommands(Period period) {
-            using var session = MesDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+            try {
+                using var session = MesDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate &&
-                p.PlannedEndDate <= period.EndDate && p.Status == "ELB").ToList();
+                return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate &&
+                    p.PlannedEndDate <= period.EndDate && p.Status == "ELB").ToList();
+            } catch (Exception ex) {
+                return new List<ProductionOrder>();
+            }
         }
 
         public void SaveDosageMaterials(List<ProductionOrderConsumption> materials) {
             using var session = MesDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            materials.ForEach(item => session.Save(item));
+            materials.ForEach(item => {
+                var stock = session.Query<StockVessel>().First(p => p.VesselCod == item.Item);
+                stock.ItemQty -= item.ItemQty;
+
+                session.Update(stock);
+                session.Save(item);
+            });
             transaction.Commit();
         }
 
@@ -59,6 +71,12 @@ namespace MpgWebService.Repository.Clients {
             var lastId = session.Query<QualityCheck>().OrderBy(p => p.ID).First();
             var correction = Utils.CreateCorrection(materials, lastId);
 
+            foreach(var material in materials.Materials) {
+                var stock = session.Query<StockVessel>().First(p => p.VesselCod == material.Item);
+                stock.ItemQty -= material.ItemQty;
+                session.Update(stock);
+            }
+
             session.Save(correction);
             transaction.Commit();
 
@@ -72,7 +90,8 @@ namespace MpgWebService.Repository.Clients {
             var details = Utils.GetOperations(session, POID);
 
             foreach(var detail in details) {
-                if(Utils.CheckOperation(session, POID, pailNumber, detail.OPNO)) {
+
+                if (Utils.CheckOperation(session, POID, pailNumber, detail.OPNO)) {
                     continue;
                 }
 

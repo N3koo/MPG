@@ -1,11 +1,14 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Response.Production;
+using MpgWebService.Presentation.Request.Command;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Business.Interface.Service {
+
     public interface IProductionService {
-        public Task<IEnumerable<Production>> GetProductionStatus(Period period);
+
+        public Task<IEnumerable<ProductionDto>> GetProductionStatus(Period period);
+
     }
 }

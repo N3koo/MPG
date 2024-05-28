@@ -1,4 +1,5 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response;
 using MpgWebService.Data.Extension;
 using MpgWebService.Properties;
 
@@ -15,7 +16,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System;
-using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Repository.Clients {
 

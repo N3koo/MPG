@@ -1,4 +1,5 @@
-﻿using MpgWebService.Business.Data.DTO;
+﻿using MpgWebService.Presentation.Response.Production;
+using MpgWebService.Presentation.Response.Report;
 
 using DataEntity.Model.Output;
 using DataEntity.Model.Input;
@@ -9,8 +10,8 @@ namespace MpgWebService.Data.Extension {
 
     public static class PailStatusExtensions {
 
-        public static Production AsProductionDto(this ProductionOrderPailStatus pail) {
-            return new Production {
+        public static ProductionDto AsProductionDto(this ProductionOrderPailStatus pail) {
+            return new ProductionDto {
                 POID = $"{pail.POID}_{pail.PailNumber}",
                 POID_ID = pail.POID,
                 Quantity = pail.NetWeight,
@@ -22,8 +23,8 @@ namespace MpgWebService.Data.Extension {
             };
         }
 
-        public static ReportCommand AsReportDto(this ProductionOrderPailStatus pail, ProductionOrder order) {
-            return new ReportCommand {
+        public static ReportCommandDto AsReportDto(this ProductionOrderPailStatus pail, ProductionOrder order) {
+            return new ReportCommandDto {
                 POID = $"{pail.POID}_{pail.PailNumber}",
                 POID_ID = pail.POID,
                 Quantity = pail.GrossWeight,

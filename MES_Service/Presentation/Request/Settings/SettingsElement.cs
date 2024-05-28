@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MpgWebService.Presentation.Request {
+namespace MpgWebService.Presentation.Request.Settings {
 
     public record SettingsElement {
 

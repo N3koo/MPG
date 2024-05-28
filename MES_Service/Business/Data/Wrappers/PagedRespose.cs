@@ -3,6 +3,7 @@
 namespace MpgWebService.Data.Wrappers {
 
     public class PagedRespose<T> : Response<T> {
+
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
         public Uri FirstPage { get; set; }
@@ -17,5 +18,6 @@ namespace MpgWebService.Data.Wrappers {
             PageSize = pageSize;
             Data = data;
         }
+
     }
 }

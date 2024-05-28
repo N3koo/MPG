@@ -1,17 +1,15 @@
-﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Business.Interface.Service;
 using MpgWebService.Business.Service;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
-using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Presentation.Controllers {
 
     [ApiController]
-    [Route("[controller]")]
+    [Route("[Controller]")]
     [Produces("text/json")]
     public class ReportController : ControllerBase {
 
@@ -32,5 +30,6 @@ namespace MpgWebService.Presentation.Controllers {
         [HttpGet("Materials/{POID}/{pail}")]
         public async Task<IActionResult> GetPailMaterials(string POID, int pail) =>
             Ok(await repository.GetMaterialsForPail(POID, pail));
+
     }
 }

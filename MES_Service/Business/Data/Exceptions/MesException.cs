@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace MpgWebService.Business.Data.Exceptions {
+
     [Serializable]
     public class MesException : Exception {
         public MesException() {

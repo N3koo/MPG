@@ -1,4 +1,5 @@
 ﻿namespace MpgWebService.Data.Wrappers {
+
     public class Response<T> {
 
         public T Data { get; set; }
@@ -16,5 +17,6 @@
             Errors = null;
             Data = data;
         }
+
     }
 }

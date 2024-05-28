@@ -1,5 +1,5 @@
-﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Business.Interface.Service;
 using MpgWebService.Business.Service;
 
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MpgWebService.Presentation.Controllers {
 
     [ApiController]
-    [Route("[controller]")]
+    [Route("[Controller]")]
     [Produces("text/json")]
     public class CommandController : ControllerBase {
 
@@ -20,57 +20,40 @@ namespace MpgWebService.Presentation.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCommands([FromQuery] Period period) {
-            var result = await service.GetCommands(period);
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetCommands([FromQuery] Period period) =>
+            Ok(await service.GetCommands(period));
 
         [HttpGet("{POID}")]
-        public async Task<IActionResult> GetCommand(string POID) {
-            var result = await service.GetCommand(POID);
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetCommand(string POID) =>
+            Ok(await service.GetCommand(POID));
 
         [HttpPut("Start")]
-        public async Task<IActionResult> StartCommand([FromBody] StartCommand details) {
-            var result = await service.StartCommand(details);
-            return Ok(result.Message);
-        }
+        public async Task<IActionResult> StartCommand([FromBody] StartCommand details) =>
+            Ok((await service.StartCommand(details)).Message);
 
         [HttpGet("QC/{POID}")]
-        public async Task<IActionResult> GetQC(string POID) {
-            var result = await service.GetQC(POID);
-            return Ok(result);
-        }
+        public async Task<IActionResult> GetQC(string POID) =>
+            Ok(await service.GetQC(POID));
 
         [HttpGet("Priority/{priority}")]
-        public async Task<IActionResult> CheckPriority(string priority) {
-            var result = await service.CheckPriority(priority);
-            return Ok(result);
-        }
+        public async Task<IActionResult> CheckPriority(string priority) => 
+            Ok(await service.CheckPriority(priority));
 
         [HttpDelete("Block/{POID}")]
-        public async Task<IActionResult> BlockCommand(string POID) {
-            var result = await service.BlockCommand(POID);
-            return Ok(result.Message);
-        }
+        public async Task<IActionResult> BlockCommand(string POID) =>
+            Ok((await service.BlockCommand(POID)).Message);
 
         [HttpPut("Close/{POID}")]
-        public async Task<IActionResult> CloseCommand(string POID) {
-            var result = await service.CloseCommand(POID);
-            return Ok(result.Message);
-        }
+        public async Task<IActionResult> CloseCommand(string POID) =>
+            Ok((await service.CloseCommand(POID)).Message);
 
         [HttpPut("Partial/{POID}")]
-        public async Task<IActionResult> PartialProduction(string POID) {
-            var result = await service.StartPartialProduction(POID);
-            return Ok(result.Message);
-        }
+        public async Task<IActionResult> PartialProduction(string POID) =>
+            Ok((await service.StartPartialProduction(POID)).Message);
 
         [HttpPost("Materials")]
-        public async Task<ActionResult> DownloadMaterials() {
-            var result = await service.DownloadMaterials();
-            return Ok(result.Message);
-        }
+        public async Task<ActionResult> DownloadMaterials() =>
+            Ok((await service.DownloadMaterials()).Message);
+
     }
 }

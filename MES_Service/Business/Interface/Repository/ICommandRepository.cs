@@ -1,5 +1,5 @@
-﻿using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response;
 
 using DataEntity.Model.Input;
 

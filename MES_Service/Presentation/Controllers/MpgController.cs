@@ -1,12 +1,13 @@
 ﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Request;
 using MpgWebService.Business.Service;
 
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using MpgWebService.Presentation.Request.MPG;
 
-namespace MpgWebService.Presentation.Controllers {
+namespace MpgWebService.Presentation.Controllers
+{
 
     [ApiController]
     [Route("[Controller]")]
@@ -19,9 +20,13 @@ namespace MpgWebService.Presentation.Controllers {
             service = new MpgService();
         }
 
-        [HttpGet("Pail")]
-        public async Task<IActionResult> GetPail() =>
-            Ok(await service.GetAvailablePail());
+        [HttpGet("Pails/QC")]
+        public async Task<IActionResult> GetQCPail() =>
+            Ok(await service.GetQCPail());
+
+        [HttpGet("Pails/{POID}")]
+        public async Task<IActionResult> GetPail(string POID) =>
+            Ok(await service.GetAvailablePail(POID));
 
         [HttpGet("Labels/{POID}")]
         public async Task<IActionResult> GetLabel(string POID) =>
@@ -48,9 +53,8 @@ namespace MpgWebService.Presentation.Controllers {
             Ok(await service.SaveDosageMaterials(materials));
 
         [HttpPost("{POID}/{pail}")]
-        public async Task<IActionResult> SetPailStatus(string POID, string pail, [FromBody] string status) {
-            var result = await service.ChangeStatus(POID, pail, status);
-            return Ok(result.Message);
-        }
+        public async Task<IActionResult> SetPailStatus(string POID, string pail, [FromBody] string status) =>
+            Ok((await service.ChangeStatus(POID, pail, status)).Message);
+
     }
 }

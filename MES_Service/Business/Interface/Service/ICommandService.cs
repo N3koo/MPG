@@ -1,12 +1,14 @@
-﻿using MpgWebService.Presentation.Request;
-using MpgWebService.Business.Data.DTO;
+﻿using MpgWebService.Presentation.Response.Command;
+using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Business.Interface.Service {
+
     public interface ICommandService {
+
         Task<IEnumerable<ProductionOrderDto>> GetCommands(Period period);
         Task<ProductionOrderDto> GetCommand(string POID);
         Task<ServiceResponse> StartCommand(StartCommand qc);
@@ -16,5 +18,6 @@ namespace MpgWebService.Business.Interface.Service {
         Task<ServiceResponse> CloseCommand(string POID);
         Task<ServiceResponse> StartPartialProduction(string POID);
         Task<ServiceResponse> DownloadMaterials();
+
     }
 }

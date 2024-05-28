@@ -1,8 +1,6 @@
-﻿using NHibernate.Transform;
-
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Report;
 using MpgWebService.Repository.Interface;
-using MpgWebService.Business.Data.DTO;
 using MpgWebService.Data.Extension;
 
 using DataEntity.Model.Input;
@@ -12,6 +10,9 @@ using DataEntity.Config;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+
+using NHibernate.Transform;
+
 
 namespace MpgWebService.Repository {
 
@@ -25,8 +26,8 @@ namespace MpgWebService.Repository {
                 "FROM MPG2MES_ProductionOrderConsumptions pc LEFT JOIN MES2MPG_MaterialData md ON pc.Item = md.MaterialID " +
                 "WHERE pc.POID = ? AND pc.PailNumber = ?";
 
-        public Task<List<ReportCommand>> GetReport(Period period) {
-            List<ReportCommand> dtos = new();
+        public Task<List<ReportCommandDto>> GetReport(Period period) {
+            List<ReportCommandDto> dtos = new();
 
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
@@ -46,14 +47,14 @@ namespace MpgWebService.Repository {
             return Task.FromResult(dtos);
         }
 
-        public Task<IList<ReportMaterial>> GetMaterialsForCommand(string POID) {
+        public Task<IList<ReportMaterialDto>> GetMaterialsForCommand(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
             var materials = session.CreateSQLQuery(QueryCommand)
-                .SetResultTransformer(Transformers.AliasToBean<ReportMaterial>())
-                .SetString(0, POID).List<ReportMaterial>();
+                .SetResultTransformer(Transformers.AliasToBean<ReportMaterialDto>())
+                .SetString(0, POID).List<ReportMaterialDto>();
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);
@@ -63,16 +64,16 @@ namespace MpgWebService.Repository {
             return Task.FromResult(materials);
         }
 
-        public Task<IList<ReportMaterial>> GetMaterialsForPail(string POID, int pail) {
+        public Task<IList<ReportMaterialDto>> GetMaterialsForPail(string POID, int pail) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
             var materials = session.CreateSQLQuery(QueryPail)
-                .SetResultTransformer(Transformers.AliasToBean<ReportMaterial>())
+                .SetResultTransformer(Transformers.AliasToBean<ReportMaterialDto>())
                 .SetString(0, POID)
                 .SetInt32(1, pail)
-                .List<ReportMaterial>();
+                .List<ReportMaterialDto>();
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);

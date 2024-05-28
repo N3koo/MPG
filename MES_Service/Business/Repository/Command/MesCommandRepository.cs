@@ -1,4 +1,5 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Clients;
 using MpgWebService.Properties;
@@ -8,7 +9,7 @@ using DataEntity.Model.Input;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using MpgWebService.Presentation.Response;
+
 
 namespace MpgWebService.Repository.Command {
 

@@ -1,4 +1,4 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Properties;
 
 using DataEntity.Model.Output;

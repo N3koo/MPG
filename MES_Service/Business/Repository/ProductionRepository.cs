@@ -1,22 +1,22 @@
-﻿using DataEntity.Model.Input;
-using DataEntity.Model.Output;
-using DataEntity.Config;
-
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Production;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Data.Extension;
+
+using DataEntity.Model.Input;
+using DataEntity.Model.Output;
+using DataEntity.Config;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using MpgWebService.Business.Data.DTO;
 
 namespace MpgWebService.Repository {
 
     public class ProductionRepository : IProductionRepository {
 
-        public Task<List<Production>> CheckProductionStatus(Period period) {
-            List<Production> dtos = new();
+        public Task<List<ProductionDto>> CheckProductionStatus(Period period) {
+            List<ProductionDto> dtos = new();
 
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();

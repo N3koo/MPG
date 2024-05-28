@@ -1,4 +1,4 @@
-﻿using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Settings;
 using MpgWebService.Repository.Interface;
 
 using System.Collections.Generic;

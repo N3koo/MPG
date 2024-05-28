@@ -1,13 +1,14 @@
 ﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Request.MPG;
 using MpgWebService.Presentation.Response;
-using MpgWebService.Presentation.Request;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Command;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MpgWebService.Business.Service { 
+namespace MpgWebService.Business.Service {
 
     public class MpgService : IMpgService {
 
@@ -17,8 +18,11 @@ namespace MpgWebService.Business.Service {
             repository = new MpgRepository();
         }
 
-        public async Task<PailDto> GetAvailablePail() => 
-            await repository.GetAvailablePail();
+        public async Task<PailDto> GetAvailablePail(string POID) => 
+            await repository.GetAvailablePail(POID);
+
+        public async Task<PailQCDto> GetQCPail() =>
+            await repository.GetQCPail();
 
         public async Task<LabelDto> GetLabel(string POID) =>
             await repository.GetLabel(POID);

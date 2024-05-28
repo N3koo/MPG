@@ -1,12 +1,13 @@
-﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Request;
+﻿using MpgWebService.Presentation.Request.Settings;
+using MpgWebService.Business.Interface.Service;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MpgWebService.Business.Service {
+namespace MpgWebService.Business.Service { 
+
     public class SettingsService : ISettingsService {
 
         public readonly ISettingsRepository repository;
@@ -15,12 +16,11 @@ namespace MpgWebService.Business.Service {
             repository = new SettingsRepository();
         }
 
-        public async Task<IEnumerable<SettingsElement>> GetSettings() {
-            return await repository.GetSettings();
-        }
+        public async Task<IEnumerable<SettingsElement>> GetSettings() =>
+            await repository.GetSettings();
 
-        public async Task<bool> SetSettings(List<SettingsElement> settings) {
-            return await repository.SetSettings(settings);
-        }
+        public async Task<bool> SetSettings(List<SettingsElement> settings) =>
+            await repository.SetSettings(settings);
+
     }
 }
