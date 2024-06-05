@@ -3,6 +3,7 @@ using MpgWebService.Presentation.Response.Mpg;
 using MpgWebService.Presentation.Request.MPG;
 using MpgWebService.Presentation.Response;
 using MpgWebService.Business.Data.Utils;
+using MpgWebService.Data.Wrappers;
 using MpgWebService.Properties;
 
 using DataEntity.Model.Output;
@@ -34,23 +35,27 @@ namespace MpgWebService.Repository.Clients {
 
         public readonly static MpgClient Client = new();
 
-        public List<ProductionOrder> GetCommands(Period period) {
+        public ServiceResponse GetCommands(Period period) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
-        }
+            var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
 
-        public void SaveCorrection(POConsumption materials, ProductionOrderCorection correction) {
+            return ServiceResponse.CreateResponse(result, "");
+        });
+
+        public IResponse SaveCorrection(POConsumption materials, ProductionOrderCorection correction) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             Utils.UpdateMaterials(session, materials);
             session.Save(correction);
             transaction.Commit();
-        }
 
-        public PailDto GetAvailablePail(string POID) {
+            return Response<int>.Success("Materialele au fost salvate");
+        });
+
+        public IResponse GetAvailablePail(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -58,19 +63,22 @@ namespace MpgWebService.Repository.Clients {
             var order = session.Query<ProductionOrder>().First(p => p.POID == POID);
             var techDetails = session.Query<ProductionOrderTechDetail>().Where(p => p.POID == POID && p.OP_DESCR == "MIXARE_1").ToList();
 
-            return PailDto.FromPailStatus(pail, order, techDetails);
-        }
+            var result = PailDto.FromPailStatus(pail, order, techDetails);
+            return Response<PailDto>.CreateResponse(result);
+        });
 
-        public PailQCDto GetFirstPail() {
+        public IResponse GetFirstPail() => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.CreateSQLQuery(GET_FIRST_PAIL)
+            var result = session.CreateSQLQuery(GET_FIRST_PAIL)
                 .SetResultTransformer(Transformers.AliasToBean<PailQCDto>())
                 .List<PailQCDto>().First();
-        }
 
-        public List<ProductionOrderConsumption> SaveDosageMaterials(POConsumption consumption) {
+            return Response<PailQCDto>.CreateResponse(result);
+        });
+
+        public IResponse SaveDosageMaterials(POConsumption consumption) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -86,31 +94,34 @@ namespace MpgWebService.Repository.Clients {
             result.ForEach(item => session.Save(item));
             transaction.Commit();
 
-            return result;
-        }
-        
-        public ProductionOrder GetCommand(string POID) {
+            return Response<List<ProductionOrderConsumption>>.CreateResponse(result);
+        });
+
+        public IResponse GetCommand(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
-        }
+            var result = session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
+            return Response<ProductionOrder>.CreateResponse(result);
+        });
 
-        public bool CheckPriority(string priority) {
+        public IResponse CheckPriority(string priority) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return !session.Query<ProductionOrder>().Any(p => p.Priority == priority);
-        }
+            var result = !session.Query<ProductionOrder>().Any(p => p.Priority == priority);
+            return Response<bool>.CreateResponse(result);
+        });
 
-        public string GetQc(string POID) {
+        public IResponse GetQc(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrderLotHeader>().FirstOrDefault(p => p.POID == POID)?.PozQC;
-        }
+            var result = session.Query<ProductionOrderLotHeader>().FirstOrDefault(p => p.POID == POID)?.PozQC;
+            return Response<string>.CreateResponse(result);
+        });
 
-        public List<MaterialDto> GetMaterials(string POID) {
+        public IResponse GetMaterials(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -120,10 +131,10 @@ namespace MpgWebService.Repository.Clients {
                 .SetString(0, POID).List<MaterialDto>().Where(p => p.ItemQty != 1).ToList();
 
             materials.ForEach(item => item.ItemQty /= quantity);
-            return materials;
-        }
-        
-        public LabelDto GetLabelData(string POID) {
+            return Response<List<MaterialDto>>.CreateResponse(materials);
+        });
+
+        public IResponse GetLabelData(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
@@ -154,22 +165,22 @@ namespace MpgWebService.Repository.Clients {
             result.Winter = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000030"
                 && p.ParamDescr == "INTARITOR IARNA" && p.MaterialID == material.MaterialID);
 
-            return result;
-        }
-        
-        public int BlockCommand(string POID) {
+            return Response<LabelDto>.CreateResponse(result);
+        });
+
+        public IResponse BlockCommand(string POID) => CatchError(() => {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var po = session.Query<ProductionOrder>().FirstOrDefault(p => p.POID == POID);
             if (po == null) {
-                return 2;
+                return Response<int>.CreateResponse(2);
             }
 
             var count = session.Query<ProductionOrderPailStatus>().Count(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_SEND);
 
             if (po.PlannedQtyBUC != count) {
-                return 1;
+                return Response<int>.CreateResponse(1);
             }
 
             po.Status = Settings.Default.CMD_BLOCKED;
@@ -180,8 +191,8 @@ namespace MpgWebService.Repository.Clients {
             session.Update(po);
             transaction.Commit();
 
-            return 0;
-        }
+            return Response<int>.CreateResponse(0);
+        });
 
         public void SetQC(QcLabelDto label) {
             using var session = MpgDb.Instance.GetSession();
@@ -206,7 +217,7 @@ namespace MpgWebService.Repository.Clients {
             session.Save(po);
             transaction.Commit();
 
-            return ServiceResponse.CreateOkResponse("Comanda a fost salvata");
+            return ServiceResponse.Ok("Comanda a fost salvata");
         }
 
         public ServiceResponse CloseCommand(string POID) {
@@ -357,5 +368,7 @@ namespace MpgWebService.Repository.Clients {
             session.Update(pail);
             transaction.Commit();
         }
+
+       
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MpgWebService.Business.Data.Exceptions;
+using System;
 
 namespace MpgWebService.Presentation.Response {
 
@@ -10,12 +11,13 @@ namespace MpgWebService.Presentation.Response {
     }
 
     public class ServiceResponse {
+        public object Data { set; get; }
         public string Message { set; get; }
-        public bool Status { set; get; }
+        public bool Error { set; get; }
         public ServerType Type { set; get; }
 
         public void CheckErrors() {
-            if (Status) {
+            if (Error) {
                 return;
             }
 
@@ -33,28 +35,46 @@ namespace MpgWebService.Presentation.Response {
             Message = $"{Message}\n{message}";
         }
 
+        public static ServiceResponse CreateResponse(object data, string message) =>
+            data == null ? NotFound(message) : Ok(data);
+
+        public static ServiceResponse Ok(object data) => new() {
+            Data = data,
+            Message = "OK",
+            Error = false,
+            Type = ServerType.Ok
+        };
+
+        public static ServiceResponse NotFound(string message) => new() {
+            Data = null,
+            Message = message,
+            Error = false,
+            Type = ServerType.Ok
+        };
+
+        public static ServiceResponse InternalError(Exception ex) => new() {
+            Data = null,
+            Message = ex.Message,
+            Error = true,
+            Type = ServerType.Ok
+        };
+
         public static ServiceResponse CreateErrorSap(string message) => new() {
             Message = message,
             Type = ServerType.Sap,
-            Status = false
+            Error = false
         };
 
         public static ServiceResponse CreateErrorMpg(string message) => new() {
             Message = message,
             Type = ServerType.Mpg,
-            Status = false
+            Error = false
         };
 
         public static ServiceResponse CreateErrorMes(string message) => new() {
             Message = message,
             Type = ServerType.Mes,
-            Status = false
-        };
-
-        public static ServiceResponse CreateOkResponse(string message) => new() {
-            Message = message,
-            Type = ServerType.Ok,
-            Status = true
+            Error = false
         };
     }
 }

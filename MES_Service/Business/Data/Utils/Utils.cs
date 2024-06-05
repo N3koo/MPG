@@ -9,6 +9,9 @@ using System.Linq;
 using System;
 
 using NHibernate;
+using System.Threading.Tasks;
+using MpgWebService.Data.Wrappers;
+using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Business.Data.Utils {
 
@@ -136,5 +139,12 @@ namespace MpgWebService.Business.Data.Utils {
             MPGRowUpdated = DateTime.Now
         };
 
+        public static ServiceResponse CatchError(Func<ServiceResponse> function) {
+            try {
+                return function();
+            } catch (Exception ex) {
+                return ServiceResponse.InternalError(ex);
+            }
+        }
     }
 }
