@@ -65,5 +65,15 @@ namespace MpgWebService.Business.Service {
             result.CheckErrors();
             return result;
         }
+
+        public async Task<List<CoefficientDto>> GetCoefficients() =>
+            await repository.GetCoefficients();
+
+        public async Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quantities) {
+            var result = await repository.UpdateReserveQuantities(quantities);
+            result.CheckErrors();
+            return result;
+        }
+
     }
 }

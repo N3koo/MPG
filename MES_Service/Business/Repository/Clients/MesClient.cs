@@ -16,6 +16,7 @@ using System;
 
 using NHibernate.Transform;
 using NHibernate.Util;
+using MpgWebService.Presentation.Response;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -253,6 +254,28 @@ namespace MpgWebService.Repository.Clients {
             transacttion.Commit();
 
             return Tuple.Create(alternative, materials, clasification);
+        }
+
+        public List<CoefficientDto> GetCoefficients() {
+            using var session = MesDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            return session.Query<StockVessel>().Select(p => CoefficientDto.FromStockVessel(p)).ToList();
+        }
+
+        public ServiceResponse ReserveQuantities(ReserveTank[] quantities) {
+            using var session = MesDb.Instance.GetSession();
+            using var transaction = session.BeginTransaction();
+
+            foreach (var quantity in quantities) {
+                var tank = session.Query<TankManagement>().First(p => p.Tank_Name == quantity.MpgHead);
+                tank.Tank_Capacity = quantity.Quantity;
+                tank.Row_Updated = DateTime.Now;
+                session.Update(tank);
+            }
+
+            transaction.Commit();
+            return ServiceResponse.CreateOkResponse("Cantitatile au fost actualizate");
         }
     }
 }

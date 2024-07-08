@@ -60,5 +60,11 @@ namespace MpgWebService.Repository.Command {
 
         public Task<List<MaterialDto>> GetMaterials(string POID) =>
             Task.FromResult(MpgClient.Client.GetMaterials(POID));
+
+        public Task<List<CoefficientDto>> GetCoefficients() =>
+            Task.FromResult(MesClient.Client.GetCoefficients());
+
+        public Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quatities) =>
+            Task.FromResult(MesClient.Client.ReserveQuantities(quatities));
     }
 }

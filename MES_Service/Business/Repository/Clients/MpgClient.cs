@@ -16,6 +16,7 @@ using System;
 
 using NHibernate.Transform;
 using NHibernate.Util;
+using MpgWebService.Data.Wrappers;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -34,11 +35,19 @@ namespace MpgWebService.Repository.Clients {
 
         public readonly static MpgClient Client = new();
 
-        public List<ProductionOrder> GetCommands(Period period) {
+        public Response<Object> GetCommands<T>(Period period) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
-            return session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
+            var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
+
+            return new Response<Object>
+            {
+                Data = result,
+                Errors = null,
+                Succeded = true,
+                Message = null
+            };
         }
 
         public void SaveCorrection(POConsumption materials, ProductionOrderCorection correction) {

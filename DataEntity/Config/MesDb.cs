@@ -63,6 +63,7 @@ namespace DataEntity.Config {
                         _ = m.FluentMappings.AddFromAssemblyOf<ProductionOrderStatus>();
                         _ = m.FluentMappings.AddFromAssemblyOf<ProductionOrderBom>();
                         _ = m.FluentMappings.AddFromAssemblyOf<StockVessel>();
+                        _ = m.FluentMappings.AddFromAssemblyOf<TankManagement>();
                         _ = m.FluentMappings.AddFromAssemblyOf<Classification>();
                         _ = m.FluentMappings.AddFromAssemblyOf<AlternativeName>();
                         _ = m.FluentMappings.AddFromAssemblyOf<SapTransfer>();

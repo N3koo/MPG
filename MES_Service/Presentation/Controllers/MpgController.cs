@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using MpgWebService.Presentation.Request.MPG;
+using NHibernate.Mapping;
 
 namespace MpgWebService.Presentation.Controllers
 {
@@ -56,5 +57,12 @@ namespace MpgWebService.Presentation.Controllers
         public async Task<IActionResult> SetPailStatus(string POID, string pail, [FromBody] string status) =>
             Ok((await service.ChangeStatus(POID, pail, status)).Message);
 
+        [HttpGet("Coefficients")]
+        public async Task<IActionResult> GetHeadsCoefficients() =>
+            Ok(await service.GetCoefficients());
+
+        [HttpPost("Reserver")]
+        public async Task<IActionResult> SetReservedQuantity([FromBody] ReserveTank[] quantities) =>
+            Ok((await service.UpdateReserveQuantities(quantities)).Message);
     }
 }

@@ -18,6 +18,7 @@ namespace MpgWebService.Business.Interface.Service {
         Task<ServiceResponse> SaveCorrection(POConsumption correction);
         Task<ServiceResponse> SaveDosageMaterials(POConsumption materials);
         Task<ServiceResponse> ChangeStatus(string POID, string pailNumber, string status);
-
+        Task<List<CoefficientDto>> GetCoefficients();
+        Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quantities);
     }
 }
