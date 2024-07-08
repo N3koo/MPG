@@ -19,7 +19,7 @@ namespace MpgWebService.Repository.Command {
         }
 
         public Task<ServiceResponse> BlockCommand(string POID) {
-            var result = MpgClient.Client.BlockCommand(POID);
+            var result = (int)MpgClient.Client.BlockCommand(POID).Data;
             ProductionOrder po;
 
             switch (result) {
@@ -37,14 +37,14 @@ namespace MpgWebService.Repository.Command {
             return Task.FromResult(ServiceResponse.CreateOkResponse("Comanda a fost blocata cu succes"));
         }
 
-        public Task<List<ProductionOrder>> GetCommands(Period period) {
+        public Task<ServiceResponse> GetCommands(Period period) {
             var orders = MesClient.Client.GetCommands(period);
             orders.AddRange(MpgClient.Client.GetCommands(period));
 
             return Task.FromResult(orders);
         }
 
-        public Task<ProductionOrder> GetCommand(string POID) {
+        public Task<ServiceResponse> GetCommand(string POID) {
             var result = MpgClient.Client.GetCommand(POID);
             return Task.FromResult(result);
         }
@@ -57,12 +57,12 @@ namespace MpgWebService.Repository.Command {
             return Task.FromResult(ServiceResponse.CreateOkResponse("Comanda a fost transmisa"));
         }
 
-        public Task<bool> CheckPriority(string Priority) {
+        public Task<ServiceResponse> CheckPriority(string Priority) {
             var result = MpgClient.Client.CheckPriority(Priority);
             return Task.FromResult(result);
         }
 
-        public Task<string> GetQC(string POID) {
+        public Task<ServiceResponse> GetQC(string POID) {
             var result = MesClient.Client.GetQc(POID);
             return Task.FromResult(result);
         }

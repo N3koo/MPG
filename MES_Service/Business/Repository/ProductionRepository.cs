@@ -15,7 +15,7 @@ namespace MpgWebService.Repository {
 
     public class ProductionRepository : IProductionRepository {
 
-        public Task<List<ProductionDto>> CheckProductionStatus(Period period) {
+        public Task<List<ProductionDto>>  CheckProductionStatus(Period period) {
             List<ProductionDto> dtos = new();
 
             using var session = MpgDb.Instance.GetSession();

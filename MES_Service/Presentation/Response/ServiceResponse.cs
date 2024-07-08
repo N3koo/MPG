@@ -1,5 +1,6 @@
 ﻿using MpgWebService.Business.Data.Exceptions;
 using System;
+using System.Threading.Tasks;
 
 namespace MpgWebService.Presentation.Response {
 
@@ -37,6 +38,13 @@ namespace MpgWebService.Presentation.Response {
 
         public static ServiceResponse CreateResponse(object data, string message) =>
             data == null ? NotFound(message) : Ok(data);
+
+        public static ServiceResponse Ok(string message) => new() {
+            Data = null,
+            Message = message,
+            Error = false,
+            Type = ServerType.Ok
+        };
 
         public static ServiceResponse Ok(object data) => new() {
             Data = data,
