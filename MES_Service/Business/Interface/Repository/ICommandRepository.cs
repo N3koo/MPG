@@ -3,20 +3,19 @@ using MpgWebService.Presentation.Response;
 
 using DataEntity.Model.Input;
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MpgWebService.Repository.Interface {
 
     public interface ICommandRepository {
 
-        Task<List<ProductionOrder>> GetCommands(Period period);
+        Task<ServiceResponse> GetCommands(Period period);
 
         Task<ProductionOrder> GetCommand(string POID);
 
-        Task<bool> CheckPriority(string Priority);
+        Task<ServiceResponse> CheckPriority(string Priority);
 
-        Task<string> GetQC(string POID);
+        Task<ServiceResponse> GetQC(string POID);
 
         Task<ServiceResponse> StartCommand(StartCommand qc);
 

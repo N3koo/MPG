@@ -4,6 +4,7 @@ using MpgWebService.Business.Data.Exceptions;
 using MpgWebService.Presentation.Response;
 using MpgWebService.Repository.Interface;
 using MpgWebService.Repository.Clients;
+using MpgWebService.Data.Wrappers;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,11 +13,8 @@ namespace MpgWebService.Repository.Command {
 
     public class MpgRepository : IMpgRepository {
 
-        public Task<PailQCDto> GetQCPail() {
-            var pail = MpgClient.Client.GetFirstPail() ?? throw new MpgException("No pail available");
-
-            return Task.FromResult(pail);
-        }
+        public Task<Response<PailQCDto>> GetQCPail() =>
+            Task.FromResult(MpgClient.Client.GetFirstPail());
 
         public Task<PailDto> GetAvailablePail(string POID) {
             var pail = MpgClient.Client.GetAvailablePail(POID) ?? throw new MpgException("No pail available");

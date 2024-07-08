@@ -1,5 +1,6 @@
 ﻿using MpgWebService.Presentation.Request.MPG;
 using MpgWebService.Business.Data.JoinData;
+using MpgWebService.Presentation.Response;
 
 using DataEntity.Model.Output;
 using DataEntity.Model.Input;
@@ -9,6 +10,7 @@ using System.Linq;
 using System;
 
 using NHibernate;
+using System.Threading.Tasks;
 
 namespace MpgWebService.Business.Data.Utils {
 
@@ -136,5 +138,12 @@ namespace MpgWebService.Business.Data.Utils {
             MPGRowUpdated = DateTime.Now
         };
 
+        public static async Task<ServiceResponse> CatchError(Func<Task<ServiceResponse>> function) {
+            try {
+                return await function();
+            } catch (Exception ex) {
+                return ServiceResponse.InternalError(ex);
+            }
+        }
     }
 }
