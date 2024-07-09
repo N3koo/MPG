@@ -25,6 +25,16 @@ namespace DataEntity.Model.Input {
         public virtual int MESStatus { set; get; }
         public virtual int? MPGStatus { set; get; }
         public virtual DateTime? MPGRowUpdated { set; get; }
+        public virtual string CanisterType { set; get; }
+        public virtual int TotalVolume { set; get; }
+        public virtual int UsefulVolume { set; get; }
+        public virtual decimal MaxQuantity { set; get; }
+        public virtual decimal RecomQuantity { set; get; }
+        public virtual decimal PasteConc { set; get; }
+        public virtual decimal ThermalDev { set; get; }
+        public virtual int NrDropSteps { set; get; }
+        public virtual decimal Reserve1 { set; get; }
+        public virtual decimal Reserve2 { set; get; }
 
         public StockVessel() {
 
@@ -100,6 +110,16 @@ namespace DataEntity.Model.Input {
             _ = Map(x => x.MESStatus).Nullable();
             _ = Map(x => x.MPGStatus).Nullable();
             _ = Map(x => x.MPGRowUpdated).Nullable();
+            _ = Map(x => x.CanisterType).Nullable();
+            _ = Map(x => x.TotalVolume).Nullable();
+            _ = Map(x => x.UsefulVolume).Nullable();
+            _ = Map(x => x.MaxQuantity).Nullable();
+            _ = Map(x => x.RecomQuantity).Nullable();
+            _ = Map(x => x.PasteConc).Nullable();
+            _ = Map(x => x.ThermalDev).Nullable();
+            _ = Map(x => x.NrDropSteps).Nullable();
+            _ = Map(x => x.Reserve1).Nullable();
+            _ = Map(x => x.Reserve2).Nullable();
         }
     }
 }
