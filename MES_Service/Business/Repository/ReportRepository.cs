@@ -1,17 +1,15 @@
-﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response.Report;
-using MpgWebService.Repository.Interface;
-using MpgWebService.Data.Extension;
-
+﻿using DataEntity.Config;
 using DataEntity.Model.Input;
 using DataEntity.Model.Output;
-using DataEntity.Config;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-
+using MpgWebService.Data.Extension;
+using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Report;
+using MpgWebService.Repository.Interface;
 using NHibernate.Transform;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace MpgWebService.Repository {
@@ -26,15 +24,16 @@ namespace MpgWebService.Repository {
                 "FROM MPG2MES_ProductionOrderConsumptions pc LEFT JOIN MES2MPG_MaterialData md ON pc.Item = md.MaterialID " +
                 "WHERE pc.POID = ? AND pc.PailNumber = ?";
 
-        public Task<List<ReportCommandDto>> GetReport(Period period) {
+        public async Task<List<ReportCommandDto>> GetReport(Period period) {
             List<ReportCommandDto> dtos = new();
 
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
-            var result = session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToList();
+            var result = await session.Query<ProductionOrder>()
+                .Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToListAsync();
 
             if (result.Count == 0) {
-                return Task.FromResult(dtos);
+                return dtos;
             }
 
             result.ForEach(item => {
@@ -44,43 +43,43 @@ namespace MpgWebService.Repository {
                 dtos.AddRange(details.Select(p => p.AsReportDto(item)));
             });
 
-            return Task.FromResult(dtos);
+            return dtos;
         }
 
-        public Task<IList<ReportMaterialDto>> GetMaterialsForCommand(string POID) {
+        public async Task<IList<ReportMaterialDto>> GetMaterialsForCommand(string POID) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
-            var materials = session.CreateSQLQuery(QueryCommand)
+            var materials = await session.CreateSQLQuery(QueryCommand)
                 .SetResultTransformer(Transformers.AliasToBean<ReportMaterialDto>())
-                .SetString(0, POID).List<ReportMaterialDto>();
+                .SetString(0, POID).ListAsync<ReportMaterialDto>();
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);
                 material.BrutQuantity = item.ItemQty;
             });
 
-            return Task.FromResult(materials);
+            return materials;
         }
 
-        public Task<IList<ReportMaterialDto>> GetMaterialsForPail(string POID, int pail) {
+        public async Task<IList<ReportMaterialDto>> GetMaterialsForPail(string POID, int pail) {
             using var session = MpgDb.Instance.GetSession();
             using var transaction = session.BeginTransaction();
 
             var boms = session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToList();
-            var materials = session.CreateSQLQuery(QueryPail)
+            var materials = await session.CreateSQLQuery(QueryPail)
                 .SetResultTransformer(Transformers.AliasToBean<ReportMaterialDto>())
                 .SetString(0, POID)
                 .SetInt32(1, pail)
-                .List<ReportMaterialDto>();
+                .ListAsync<ReportMaterialDto>();
 
             boms.ForEach(item => {
                 var material = materials.First(p => p.Item == item.Item);
                 material.BrutQuantity = item.ItemQty / boms.Count;
             });
 
-            return Task.FromResult(materials);
+            return materials;
         }
     }
 }

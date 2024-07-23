@@ -1,23 +1,21 @@
-﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response.Mpg;
-using MpgWebService.Presentation.Request.MPG;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Business.Data.Utils;
-using MpgWebService.Properties;
-
-using DataEntity.Model.Output;
+﻿using DataEntity.Config;
 using DataEntity.Model.Input;
+using DataEntity.Model.Output;
 using DataEntity.Model.Types;
-using DataEntity.Config;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Data.Entity;
-using System.Linq;
-using System;
-
+using MpgWebService.Business.Data.Utils;
+using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Presentation.Response.Mpg;
+using MpgWebService.Presentation.Response.Wrapper;
+using MpgWebService.Properties;
+using NHibernate.Linq;
 using NHibernate.Transform;
 using NHibernate.Util;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -36,352 +34,440 @@ namespace MpgWebService.Repository.Clients {
 
         public readonly static MpgClient Client = new();
 
-        public Task<ServiceResponse> GetCommands(Period period) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+        public async Task<ServiceResponse> GetCommands(Period period) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var result = await session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToListAsync();
+                var result = await session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate && p.PlannedEndDate <= period.EndDate).ToListAsync();
 
-            return ServiceResponse.CreateResponse(result, "Nu exista inregistrari in perioada selectata");
-        });
+                return ServiceResponse.CreateResponse(result, "Nu exista inregistrari in perioada selectata");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-        public Task<ServiceResponse> SaveCorrection(POConsumption materials, ProductionOrderCorection correction) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+        public async Task<ServiceResponse> SaveCorrection(POConsumption materials, ServiceResponse response) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            Utils.UpdateMaterials(session, materials);
-            await session.SaveAsync(correction);
-            await transaction.CommitAsync();
+                var correction = (ProductionOrderCorection)response.Data;
 
-            return ServiceResponse.Ok("Corectiile au fost salvate");
-        });
+                Utils.UpdateMaterials(session, materials);
+                await session.SaveAsync(correction);
+                await transaction.CommitAsync();
 
-        public Task<ServiceResponse> GetAvailablePail(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                return ServiceResponse.Ok("Corectiile au fost salvate");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var pail = await session.Query<ProductionOrderPailStatus>().FirstOrDefaultAsync(p => p.POID == POID && p.PailStatus == "ELB");
-            var order = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
-            var techDetails = await session.Query<ProductionOrderTechDetail>().Where(p => p.POID == POID && p.OP_DESCR == "MIXARE_1").ToListAsync();
+        public async Task<ServiceResponse> GetAvailablePail(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var result = PailDto.FromPailStatus(pail, order, techDetails);
-            return ServiceResponse.CreateResponse(result, "Nu exista galeti disponibile");
-        });
+                var pail = await session.Query<ProductionOrderPailStatus>().FirstOrDefaultAsync(p => p.POID == POID && p.PailStatus == "ELB");
+                var order = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
+                var techDetails = await session.Query<ProductionOrderTechDetail>().Where(p => p.POID == POID && p.OP_DESCR == "MIXARE_1").ToListAsync();
 
-        public Task<ServiceResponse> GetFirstPail() => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                var result = PailDto.FromPailStatus(pail, order, techDetails);
+                return ServiceResponse.CreateResponse(result, "Nu exista galeti disponibile");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var result = await session.CreateSQLQuery(GET_FIRST_PAIL)
-                .SetResultTransformer(Transformers.AliasToBean<PailQCDto>())
-                .ListAsync<PailQCDto>();
+        public async Task<ServiceResponse> GetFirstPail() {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            return ServiceResponse.CreateResponse(result.First(), "Nu exista comenzi active");
-        });
+                var result = await session.CreateSQLQuery(GET_FIRST_PAIL)
+                    .SetResultTransformer(Transformers.AliasToBean<PailQCDto>())
+                    .ListAsync<PailQCDto>();
 
-        public Task<ServiceResponse> SaveDosageMaterials(POConsumption consumption) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                return ServiceResponse.CreateResponse(result.First(), "Nu exista comenzi active");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var items = consumption.Materials.Select(p => p.Item).ToList();
-            var data = await session.QueryOver<ProductionOrderBom>()
-                .WhereRestrictionOn(p => p.Item)
-                .IsIn(items)
-                .And(p => p.POID == consumption.POID)
-                .ListAsync<ProductionOrderBom>();
+        public async Task<ServiceResponse> SaveDosageMaterials(POConsumption consumption) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var result = Utils.CreateConsumption(consumption, data.ToList());
+                var items = consumption.Materials.Select(p => p.Item).ToList();
+                var data = await session.QueryOver<ProductionOrderBom>()
+                    .WhereRestrictionOn(p => p.Item)
+                    .IsIn(items)
+                    .And(p => p.POID == consumption.POID)
+                    .ListAsync<ProductionOrderBom>();
 
-            result.ForEach(async item => await session.SaveAsync(item));
-            await transaction.CommitAsync();
+                var result = Utils.CreateConsumption(consumption, data.ToList());
 
-            return ServiceResponse.Ok("Materialele au fost salvate");
-        });
+                result.ForEach(async item => await session.SaveAsync(item));
+                await transaction.CommitAsync();
 
-        public Task<ServiceResponse> GetCommand(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                return ServiceResponse.Ok(result);
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var result = await session.Query<ProductionOrder>().FirstOrDefaultAsync(p => p.POID == POID);
-            return ServiceResponse.CreateResponse(result, "Comanda nu exista");
-        });
+        public async Task<ServiceResponse> GetCommand(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-        public Task<ServiceResponse> CheckPriority(string priority) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                var result = await session.Query<ProductionOrder>().FirstOrDefaultAsync(p => p.POID == POID);
+                return ServiceResponse.CreateResponse(result, "Comanda nu exista");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var result = !session.Query<ProductionOrder>().Any(p => p.Priority == priority);
-            return ServiceResponse.CreateResponse(result, "Nu exista o comanda ce are prioritatea data");
-        });
+        public async Task<ServiceResponse> CheckPriority(string priority) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-        public Task<ServiceResponse> GetQc(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                var result = await session.Query<ProductionOrder>().AnyAsync(p => p.Priority == priority);
+                return ServiceResponse.CreateResponse(!result, "Nu exista o comanda ce are prioritatea data");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var result = await session.Query<ProductionOrderLotHeader>().FirstOrDefaultAsync(p => p.POID == POID);
-            return ServiceResponse.CreateResponse(result?.PozQC, "Nu exista comanda");
-        });
+        public async Task<ServiceResponse> GetQc(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-        public Task<ServiceResponse> GetMaterials(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                var result = await session.Query<ProductionOrderLotHeader>().FirstOrDefaultAsync(p => p.POID == POID);
+                return ServiceResponse.CreateResponse(result?.PozQC, "Nu exista comanda");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var quantity = (await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID)).PlannedQtyBUC;
-            var materials = await session.CreateSQLQuery(DOSAGE_MATERIALS)
-                .SetResultTransformer(Transformers.AliasToBean<MaterialDto>())
-                .SetString(0, POID).ListAsync<MaterialDto>();
+        public async Task<ServiceResponse> GetMaterials(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            materials.Where(p => p.ItemQty != 1).ToList().ForEach(item => item.ItemQty /= quantity);
-            return ServiceResponse.CreateResponse(materials, "Nu exista materiale pentru comanda selectata");
-        });
+                var quantity = (await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID)).PlannedQtyBUC;
+                var materials = await session.CreateSQLQuery(DOSAGE_MATERIALS)
+                    .SetResultTransformer(Transformers.AliasToBean<MaterialDto>())
+                    .SetString(0, POID).ListAsync<MaterialDto>();
 
-        public Task<ServiceResponse> GetLabelData(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                materials.Where(p => p.ItemQty != 1).ToList().ForEach(item => item.ItemQty /= quantity);
+                return ServiceResponse.CreateResponse(materials, "Nu exista materiale pentru comanda selectata");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var result = new LabelDto();
-            var production = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
-            var material = await session.Query<MaterialData>().FirstAsync(p => p.MaterialID == production.MaterialID);
-            var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == POID);
-            var details = await session.Query<ProductionOrderLotDetail>().FirstAsync(p => p.POID == POID);
+        public async Task<ServiceResponse> GetLabelData(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            result.SetMaterialDetails(material, pail);
-            result.SetProductionDetails(production);
-            result.SetLimits(details);
+                var result = new LabelDto();
+                var production = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
+                var material = await session.Query<MaterialData>().FirstAsync(p => p.MaterialID == production.MaterialID);
+                var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == POID);
+                var details = await session.Query<ProductionOrderLotDetail>().FirstAsync(p => p.POID == POID);
 
-            result.RiskPhrases = session.Query<RiskPhrase>().FirstOrDefault(p => p.Material == material.MaterialID);
+                result.SetMaterialDetails(material, pail);
+                result.SetProductionDetails(production);
+                result.SetLimits(details);
 
-            result.ProductOrigin = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000028"
-                && p.ParamDescr == "MEDIU DISPERSIE" && p.MaterialID == material.MaterialID);
+                result.RiskPhrases = session.Query<RiskPhrase>().FirstOrDefault(p => p.Material == material.MaterialID);
 
-            result.Diluent = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000025"
-                && p.ParamDescr == "DILUANT RECOMANDAT" && p.MaterialID == material.MaterialID);
+                result.ProductOrigin = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000028"
+                    && p.ParamDescr == "MEDIU DISPERSIE" && p.MaterialID == material.MaterialID);
 
-            result.Temperature = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000015"
-                && p.ParamDescr == "CONDITII DE DEPOZITARE" && p.MaterialID == material.MaterialID);
+                result.Diluent = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000025"
+                    && p.ParamDescr == "DILUANT RECOMANDAT" && p.MaterialID == material.MaterialID);
 
-            result.Hardener = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000029"
-                && p.ParamDescr == "INTARITOR UNIVERSAL" && p.MaterialID == material.MaterialID);
+                result.Temperature = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000015"
+                    && p.ParamDescr == "CONDITII DE DEPOZITARE" && p.MaterialID == material.MaterialID);
 
-            result.Winter = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000030"
-                && p.ParamDescr == "INTARITOR IARNA" && p.MaterialID == material.MaterialID);
+                result.Hardener = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000029"
+                    && p.ParamDescr == "INTARITOR UNIVERSAL" && p.MaterialID == material.MaterialID);
 
-            return ServiceResponse.CreateResponse(result, "Nu exista eticheta pentru comanda selectata");
-        });
+                result.Winter = session.Query<Classification>().FirstOrDefault(p => p.Param == "0000000030"
+                    && p.ParamDescr == "INTARITOR IARNA" && p.MaterialID == material.MaterialID);
 
-        public Task<ServiceResponse> BlockCommand(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                return ServiceResponse.CreateResponse(result, "Nu exista eticheta pentru comanda selectata");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var po = await session.Query<ProductionOrder>().FirstOrDefaultAsync(p => p.POID == POID);
-            if (po == null) {
-                return ServiceResponse.Ok(2);
+        public async Task<ServiceResponse> BlockCommand(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
+
+                var po = await session.Query<ProductionOrder>().FirstOrDefaultAsync(p => p.POID == POID);
+                if (po == null) {
+                    return ServiceResponse.Ok(2);
+                }
+
+                var count = await session.Query<ProductionOrderPailStatus>().CountAsync(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_SEND);
+
+                if (po.PlannedQtyBUC != count) {
+                    return ServiceResponse.Ok(1);
+                }
+
+                po.Status = Settings.Default.CMD_BLOCKED;
+                po.Priority = "-1";
+                po.MPGStatus = 1;
+                po.MPGRowUpdated = DateTime.Now;
+
+                await session.UpdateAsync(po);
+                await transaction.CommitAsync();
+
+                return ServiceResponse.Ok(0);
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
             }
 
-            var count = await session.Query<ProductionOrderPailStatus>().CountAsync(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_SEND);
+        }
 
-            if (po.PlannedQtyBUC != count) {
-                return ServiceResponse.Ok(1);
-            }
+        public async Task<ServiceResponse> SetQC(ServiceResponse response) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            po.Status = Settings.Default.CMD_BLOCKED;
-            po.Priority = "-1";
-            po.MPGStatus = 1;
-            po.MPGRowUpdated = DateTime.Now;
+                var label = (QcLabelDto)response.Data;
+                var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == label.POID && p.PailNumber == label.PailNumber);
 
-            await session.UpdateAsync(po);
-            await transaction.CommitAsync();
+                pail.PailStatus = "PRLQ";
+                pail.Op_No = label.OpQM;
 
-            return ServiceResponse.Ok(0);
-        });
-
-        public Task<ServiceResponse> SetQC(QcLabelDto label) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == label.POID && p.PailNumber == label.PailNumber);
-
-            pail.PailStatus = "PRLQ";
-            pail.Op_No = label.OpQM;
-
-
-            await session.UpdateAsync(pail);
-            await transaction.CommitAsync();
-
-            return ServiceResponse.Ok("Statusul a fost actualizat");
-        });
-
-        public Task<ServiceResponse> CreateCommand(ProductionOrder po) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            po.Priority = "-1";
-
-            await session.SaveAsync(po);
-            await transaction.CommitAsync();
-
-            return ServiceResponse.Ok("Comanda a fost salvata");
-        });
-
-        public Task<ServiceResponse> CloseCommand(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            var result = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
-            result.Status = Settings.Default.CMD_DONE;
-            result.Priority = "-1";
-
-            await session.UpdateAsync(result);
-            await transaction.CommitAsync();
-
-            return ServiceResponse.Ok("Comanda a fost inchisa");
-        });
-
-        public Task<ServiceResponse> PartialMaterials(string POID) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            var po = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
-            var pails = await session.Query<ProductionOrderPailStatus>().Where(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_DONE).ToListAsync();
-            var position = await session.Query<ProductionOrderFinalItem>().FirstAsync(p => p.POID == POID);
-            var ldm = await session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToListAsync();
-
-            var result = Tuple.Create(po, pails, ldm, position.ItemPosition);
-            return ServiceResponse.Ok(result);
-        });
-
-        public Task<ServiceResponse> UpdateTickets(object data) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
-
-            var tuple = (Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string>)data;
-            tuple.Item2.ForEach(async pail => {
                 await session.UpdateAsync(pail);
-            });
+                await transaction.CommitAsync();
 
-            await transaction.CommitAsync();
+                return ServiceResponse.Ok("Statusul a fost actualizat");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            return ServiceResponse.Ok("Materialele au fost actulizate");
-        });
+        public async Task<ServiceResponse> CreateCommand(ProductionOrder po) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-        public Task<ServiceResponse> StartCommand(Tuple<InputData, List<ProductionOrderPailStatus>> data) => Utils.CatchError(async () => {
-            var po = data.Item1;
+                po.Priority = "-1";
 
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                await session.SaveAsync(po);
+                await transaction.CommitAsync();
 
-            await session.SaveAsync(po.Order);
-            po.DataUOMS.ForEach(async item => await session.SaveAsync(item));
-            po.OrderBOM.ForEach(async item => await session.SaveAsync(item));
-            po.OrderFinalItem.ForEach(async item => await session.SaveAsync(item));
-            po.LotDetails.ForEach(async item => await session.SaveAsync(item));
-            await session.SaveAsync(po.LotHeader);
+                return ServiceResponse.Ok("Comanda a fost salvata");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            data.Item2.ForEach(async pail => {
-                await session.SaveAsync(pail);
-            });
+        public async Task<ServiceResponse> CloseCommand(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            await transaction.CommitAsync();
+                var result = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
+                result.Status = Settings.Default.CMD_DONE;
+                result.Priority = "-1";
 
-            return ServiceResponse.Ok("Comanda a fost inceputa");
-        });
+                await session.UpdateAsync(result);
+                await transaction.CommitAsync();
 
-        public Task<ServiceResponse> SaveOrUpdateMaterials(object data) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+                return ServiceResponse.Ok("Comanda a fost inchisa");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            var tuple = (Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>>)data;
+        public async Task<ServiceResponse> PartialMaterials(string POID) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            tuple.Item1.ForEach(async name => {
-                var localName = await session.Query<AlternativeName>().FirstOrDefaultAsync(p => p.MaterialID == name.MaterialID && p.Language == name.Language);
+                var po = await session.Query<ProductionOrder>().FirstAsync(p => p.POID == POID);
+                var pails = await session.Query<ProductionOrderPailStatus>().Where(p => p.POID == POID && p.PailStatus == Settings.Default.CMD_DONE).ToListAsync();
+                var position = await session.Query<ProductionOrderFinalItem>().FirstAsync(p => p.POID == POID);
+                var ldm = await session.Query<ProductionOrderBom>().Where(p => p.POID == POID).ToListAsync();
 
-                if (localName == null) {
-                    _ = await session.SaveAsync(name);
-                } else {
-                    localName.SetDetails(name);
-                    await session.SaveAsync(localName);
-                }
-            });
+                var result = Tuple.Create(po, pails, ldm, position.ItemPosition);
+                return ServiceResponse.Ok(result);
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-            tuple.Item2.ForEach(async material => {
-                var localMaterial = await session.Query<MaterialData>().FirstOrDefaultAsync(p => p.MaterialID == material.MaterialID);
+        public async Task<ServiceResponse> UpdateTickets(ServiceResponse response) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-                if (localMaterial == null) {
-                    _ = await session.SaveAsync(material);
-                } else {
-                    localMaterial.SetDetails(material);
-                    await session.SaveAsync(localMaterial);
-                }
-            });
+                var tuple = (Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string>)response.Data;
+                tuple.Item2.ForEach(async pail => {
+                    await session.UpdateAsync(pail);
+                });
+
+                await transaction.CommitAsync();
+
+                return ServiceResponse.Ok("Materialele au fost actulizate");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
+
+        public async Task<ServiceResponse> StartCommand(ServiceResponse response) {
+            try {
+                var data = (Tuple<InputData, List<ProductionOrderPailStatus>>)response.Data;
+                var po = data.Item1;
+
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
+
+                await session.SaveAsync(po.Order);
+                po.DataUOMS.ForEach(async item => await session.SaveAsync(item));
+                po.OrderBOM.ForEach(async item => await session.SaveAsync(item));
+                po.OrderFinalItem.ForEach(async item => await session.SaveAsync(item));
+                po.LotDetails.ForEach(async item => await session.SaveAsync(item));
+                await session.SaveAsync(po.LotHeader);
+
+                data.Item2.ForEach(async pail => {
+                    await session.SaveAsync(pail);
+                });
+
+                await transaction.CommitAsync();
+
+                return ServiceResponse.Ok("Comanda a fost inceputa");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
+
+        public async Task<ServiceResponse> SaveOrUpdateMaterials(ServiceResponse response) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
+
+                var tuple = (Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>>)response.Data;
+
+                tuple.Item1.ForEach(async name => {
+                    var localName = await session.Query<AlternativeName>().FirstOrDefaultAsync(p => p.MaterialID == name.MaterialID && p.Language == name.Language);
+
+                    if (localName == null) {
+                        _ = await session.SaveAsync(name);
+                    } else {
+                        localName.SetDetails(name);
+                        await session.SaveAsync(localName);
+                    }
+                });
+
+                tuple.Item2.ForEach(async material => {
+                    var localMaterial = await session.Query<MaterialData>().FirstOrDefaultAsync(p => p.MaterialID == material.MaterialID);
+
+                    if (localMaterial == null) {
+                        _ = await session.SaveAsync(material);
+                    } else {
+                        localMaterial.SetDetails(material);
+                        await session.SaveAsync(localMaterial);
+                    }
+                });
 
 
-            tuple.Item3.ForEach(async classification => {
-                var localClasification = await session.Query<Classification>().FirstOrDefaultAsync(p => p.MaterialID == classification.MaterialID &&
-                        p.Param == classification.Param && p.Value == classification.Value);
+                tuple.Item3.ForEach(async classification => {
+                    var localClasification = await session.Query<Classification>().FirstOrDefaultAsync(p => p.MaterialID == classification.MaterialID &&
+                            p.Param == classification.Param && p.Value == classification.Value);
 
-                if (localClasification == null) {
-                    await session.SaveAsync(classification);
-                } else {
-                    localClasification.SetDetails(classification);
-                    await session.UpdateAsync(localClasification);
-                }
-            });
+                    if (localClasification == null) {
+                        await session.SaveAsync(classification);
+                    } else {
+                        localClasification.SetDetails(classification);
+                        await session.UpdateAsync(localClasification);
+                    }
+                });
 
-            await transaction.CommitAsync();
+                await transaction.CommitAsync();
 
-            return ServiceResponse.Ok("Materialele au fost actualizate");
-        });
+                return ServiceResponse.Ok("Materialele au fost actualizate");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-        public Task<ServiceResponse> SaveOrUpdateRiskPhrases(object data) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+        public async Task<ServiceResponse> SaveOrUpdateRiskPhrases(ServiceResponse response) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var phrases = (List<RiskPhrase>)data;
-            phrases.ForEach(async item => {
-                var phrase = await session.Query<RiskPhrase>().FirstOrDefaultAsync(p => p.Material == item.Material);
+                var phrases = (List<RiskPhrase>)response?.Data;
+                phrases.ForEach(async item => {
+                    var phrase = await session.Query<RiskPhrase>().FirstOrDefaultAsync(p => p.Material == item.Material);
 
-                if (phrase == null) {
-                   await session.SaveAsync(item);
-                } else {
-                    phrase.Update(item);
-                    await session.UpdateAsync(phrase);
-                }
-            });
+                    if (phrase == null) {
+                        await session.SaveAsync(item);
+                    } else {
+                        phrase.Update(item);
+                        await session.UpdateAsync(phrase);
+                    }
+                });
 
-            await transaction.CommitAsync();
-            return ServiceResponse.Ok("Frazele de risc au fost actualizate");
-        });
+                await transaction.CommitAsync();
+                return ServiceResponse.Ok("Frazele de risc au fost actualizate");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-        public Task<ServiceResponse> SaveOrUpdateStockVesel(object data) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+        public async Task<ServiceResponse> SaveOrUpdateStockVesel(object data) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var vessels = (List<StockVessel>)data;
-            vessels.ForEach(async vessel => {
-                var local = await session.Query<StockVessel>().FirstOrDefaultAsync(p => p.MaterialID == vessel.MaterialID);
+                var vessels = (List<StockVessel>)data;
+                vessels.ForEach(async vessel => {
+                    var local = await session.Query<StockVessel>().FirstOrDefaultAsync(p => p.MaterialID == vessel.MaterialID);
 
-                if (local == null) {
-                    await session.SaveAsync(vessel);
-                } else {
-                    local.SetDetails(vessel);
-                    await session.UpdateAsync(local);
-                }
-            });
+                    if (local == null) {
+                        await session.SaveAsync(vessel);
+                    } else {
+                        local.SetDetails(vessel);
+                        await session.UpdateAsync(local);
+                    }
+                });
 
-            await transaction.CommitAsync();
-            return ServiceResponse.Ok("Vasele de stocare au fost actualizate");
-        });
+                await transaction.CommitAsync();
+                return ServiceResponse.Ok("Vasele de stocare au fost actualizate");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
 
-        public Task<ServiceResponse> ChangeStatus(string POID, string pailIndex, string status) => Utils.CatchError(async () => {
-            using var session = MpgDb.Instance.GetSession();
-            using var transaction = session.BeginTransaction();
+        public async Task<ServiceResponse> ChangeStatus(string POID, string pailIndex, string status) {
+            try {
+                using var session = MpgDb.Instance.GetSession();
+                using var transaction = session.BeginTransaction();
 
-            var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == POID && p.PailNumber == pailIndex);
-            pail.PailStatus = status;
+                var pail = await session.Query<ProductionOrderPailStatus>().FirstAsync(p => p.POID == POID && p.PailNumber == pailIndex);
+                pail.PailStatus = status;
 
-            await session.UpdateAsync(pail);
-            await transaction.CommitAsync();
-            return ServiceResponse.Ok("Statul galetii a fost actualizat");
-        });
+                await session.UpdateAsync(pail);
+                await transaction.CommitAsync();
+                return ServiceResponse.Ok("Statul galetii a fost actualizat");
+            } catch (Exception ex) {
+                return ServiceResponse.CreateErrorMpg(ex.Message);
+            }
+        }
     }
 }

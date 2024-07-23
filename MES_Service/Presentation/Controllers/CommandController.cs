@@ -1,10 +1,7 @@
-﻿using MpgWebService.Presentation.Request.Command;
+﻿using Microsoft.AspNetCore.Mvc;
 using MpgWebService.Business.Interface.Service;
-using MpgWebService.Business.Service;
-
+using MpgWebService.Presentation.Request.Command;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Mvc;
 
 namespace MpgWebService.Presentation.Controllers {
 
@@ -15,8 +12,8 @@ namespace MpgWebService.Presentation.Controllers {
 
         private readonly ICommandService service;
 
-        public CommandController() {
-            service = new CommandService();
+        public CommandController(ICommandService service) {
+            this.service = service;
         }
 
         [HttpGet]
@@ -29,31 +26,31 @@ namespace MpgWebService.Presentation.Controllers {
 
         [HttpPut("Start")]
         public async Task<IActionResult> StartCommand([FromBody] StartCommand details) =>
-            Ok((await service.StartCommand(details)).Message);
+            Ok(await service.StartCommand(details));
 
         [HttpGet("QC/{POID}")]
         public async Task<IActionResult> GetQC(string POID) =>
             Ok(await service.GetQC(POID));
 
         [HttpGet("Priority/{priority}")]
-        public async Task<IActionResult> CheckPriority(string priority) => 
+        public async Task<IActionResult> CheckPriority(string priority) =>
             Ok(await service.CheckPriority(priority));
 
         [HttpDelete("Block/{POID}")]
         public async Task<IActionResult> BlockCommand(string POID) =>
-            Ok((await service.BlockCommand(POID)).Message);
+            Ok(await service.BlockCommand(POID));
 
         [HttpPut("Close/{POID}")]
         public async Task<IActionResult> CloseCommand(string POID) =>
-            Ok((await service.CloseCommand(POID)).Message);
+            Ok(await service.CloseCommand(POID));
 
         [HttpPut("Partial/{POID}")]
         public async Task<IActionResult> PartialProduction(string POID) =>
-            Ok((await service.StartPartialProduction(POID)).Message);
+            Ok(await service.StartPartialProduction(POID));
 
         [HttpPost("Materials")]
         public async Task<ActionResult> DownloadMaterials() =>
-            Ok((await service.DownloadMaterials()).Message);
+            Ok(await service.DownloadMaterials());
 
     }
 }

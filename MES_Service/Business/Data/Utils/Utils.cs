@@ -1,16 +1,11 @@
-﻿using MpgWebService.Presentation.Request.MPG;
-using MpgWebService.Business.Data.JoinData;
-using MpgWebService.Presentation.Response;
-
+﻿using DataEntity.Model.Input;
 using DataEntity.Model.Output;
-using DataEntity.Model.Input;
-
+using MpgWebService.Business.Data.JoinData;
+using MpgWebService.Presentation.Request.MPG;
+using NHibernate;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-
-using NHibernate;
-using System.Threading.Tasks;
 
 namespace MpgWebService.Business.Data.Utils {
 
@@ -80,11 +75,11 @@ namespace MpgWebService.Business.Data.Utils {
             BomID = bom.BomID,
             ItemProposedLot = bom.ItemProposedLot,
             ItemQty = material.ItemQty,
-            ItemQtyUOM = material.ItemUom, 
+            ItemQtyUOM = material.ItemUom,
             ItemStorageLoc = bom.ItemStorageLoc,
             MaterialID = bom.MaterialID
         };
-        
+
         public static ProductionOrderCorection CreateCorrection(POConsumption materials, QualityCheck quality) => new() {
             CreationDate = DateTime.Now,
             POID = materials.POID,
@@ -137,13 +132,5 @@ namespace MpgWebService.Business.Data.Utils {
             ErrorMessage = null,
             MPGRowUpdated = DateTime.Now
         };
-
-        public static async Task<ServiceResponse> CatchError(Func<Task<ServiceResponse>> function) {
-            try {
-                return await function();
-            } catch (Exception ex) {
-                return ServiceResponse.InternalError(ex);
-            }
-        }
     }
 }

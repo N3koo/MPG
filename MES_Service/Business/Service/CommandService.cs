@@ -1,15 +1,10 @@
-﻿using MpgWebService.Presentation.Response.Command;
+﻿using MpgWebService.Business.Interface.Service;
 using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Repository.Interface;
-using MpgWebService.Repository.Command;
-using MpgWebService.Data.Extension;
+using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
-
-using System.Collections.Generic;
+using MpgWebService.Repository.Command;
+using MpgWebService.Repository.Interface;
 using System.Threading.Tasks;
-using System.Linq;
 
 
 namespace MpgWebService.Business.Service {
@@ -26,20 +21,14 @@ namespace MpgWebService.Business.Service {
             this.repository = repository;
         }
 
-        public async Task<ServiceResponse> BlockCommand(string POID) {
-            var result = await repository.BlockCommand(POID);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<ServiceResponse> BlockCommand(string POID) =>
+            await repository.BlockCommand(POID);
 
-        public async Task<bool> CheckPriority(string priority) =>
+        public async Task<ServiceResponse> CheckPriority(string priority) =>
             await repository.CheckPriority(priority);
 
-        public async Task<ServiceResponse> CloseCommand(string POID) {
-            var response = await repository.CloseCommand(POID);
-            response.CheckErrors();
-            return response;
-        }
+        public async Task<ServiceResponse> CloseCommand(string POID) =>
+            await repository.CloseCommand(POID);
 
         public async Task<ServiceResponse> DownloadMaterials() {
             var data = Settings.Default.Update;
@@ -51,29 +40,22 @@ namespace MpgWebService.Business.Service {
                 response = await repository.UpdateMaterials();
             }
 
-            response.CheckErrors();
             return response;
         }
 
-        public async Task<ProductionOrderDto> GetCommand(string POID) =>
-            (await repository.GetCommand(POID)).AsDto();
+        public async Task<ServiceResponse> GetCommand(string POID) =>
+            await repository.GetCommand(POID);
 
-        public async Task<IEnumerable<ProductionOrderDto>> GetCommands(Period period) =>
-            (await repository.GetCommands(period)).Select(item => item.AsDto());
+        public async Task<ServiceResponse> GetCommands(Period period) =>
+            await repository.GetCommands(period);
 
-        public async Task<string> GetQC(string POID) =>
+        public async Task<ServiceResponse> GetQC(string POID) =>
             await repository.GetQC(POID);
 
-        public async Task<ServiceResponse> StartCommand(StartCommand qc) {
-            var result = await repository.StartCommand(qc);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<ServiceResponse> StartCommand(StartCommand qc) =>
+            await repository.StartCommand(qc);
 
-        public async Task<ServiceResponse> StartPartialProduction(string POID) {
-            var result = await repository.PartialProduction(POID);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<ServiceResponse> StartPartialProduction(string POID) =>
+            await repository.PartialProduction(POID);
     }
 }

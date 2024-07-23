@@ -1,21 +1,18 @@
-﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Data.Extension;
-using MpgWebService.Properties;
-
-using DataEntity.Model.Output;
+﻿using DataEntity.Config;
 using DataEntity.Model.Input;
+using DataEntity.Model.Output;
 using DataEntity.Model.Types;
-using DataEntity.Config;
-
+using MpgWebService.Data.Extension;
+using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Wrapper;
+using MpgWebService.Properties;
 using SAPServices;
-
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System;
+using System.Threading.Tasks;
 
 namespace MpgWebService.Repository.Clients {
 
@@ -29,12 +26,12 @@ namespace MpgWebService.Repository.Clients {
             sapClient = SapDb.GetClient();
         }
 
-        public async Task<ProductionOrder> BlockCommand(string POID) {
+        public async Task<ServiceResponse> BlockCommand(string POID) {
             var po = InputDataCollection.GetCommand(POID);
             po.Status = Settings.Default.CMD_BLOCKED;
             var status = await SetCommandStatusAsync(POID, Settings.Default.CMD_BLOCKED); // TODO: Check how to treat this result
 
-            return status ? po : null;
+            return status ? ServiceResponse.Ok(po) : ServiceResponse.CreateErrorSap($"Nu a fost gasita comanda {POID}");
         }
 
         public async Task<bool> SetCommandStatusAsync(string POID, string status) {
@@ -60,13 +57,10 @@ namespace MpgWebService.Repository.Clients {
             return resultStatus;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tuple"></param>
-        /// <returns></returns>
-        public async Task<ServiceResponse> SendPartialProductionAsync(Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string> tuple) {
-            var response = ServiceResponse.CreateOkResponse("Materialele au fost transmise");
+        public async Task<ServiceResponse> SendPartialProductionAsync(ServiceResponse serviceResponse) {
+            var tuple = (Tuple<ProductionOrder, List<ProductionOrderPailStatus>, List<ProductionOrderBom>, string>)serviceResponse.Data;
+
+            var response = ServiceResponse.Ok("Materialele au fost transmise");
             StringBuilder builder = new();
 
             Z_MPGPREDARE rendition = tuple.Item1.CreatePredare(tuple.Item2.Count, tuple.Item4);
@@ -96,38 +90,36 @@ namespace MpgWebService.Repository.Clients {
             });
 
             if (string.IsNullOrEmpty(tuple.Item2[0].Consumption)) {
-                if (response.Status) {
+                if (response.Errors.Count != 0) {
                     response = ServiceResponse.CreateErrorSap(builder.ToString());
                 } else {
-                    response.AddError(builder.ToString());
+                    response.AddError(ErrorType.MPG(builder.ToString()));
                 }
             }
 
             return response;
         }
 
-        public async Task<List<ProductionOrder>> GetCommandsAsync(Period period) {
+        public async Task<ServiceResponse> GetCommandsAsync(Period period) {
             InputDataCollection.Clear();
-            var task = sapClient.Z_PRODORDERSAsync(new Z_PRODORDERS {
+            var data = await sapClient.Z_PRODORDERSAsync(new Z_PRODORDERS {
                 PLANT = Settings.Default.Plant,
                 START_DATE = period.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 END_DATE = period.EndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             });
 
-            if (await Task.WhenAny(task, Task.Delay(10000)) == task) {
-                task.Result.Z_PRODORDERSResponse.MPGPO.ToList().ForEach(item => {
-                    InputDataCollection.CreateCollection(item.POID, task.Result.Z_PRODORDERSResponse);
-                });
+            foreach (var item in data.Z_PRODORDERSResponse.MPGPO) {
+                InputDataCollection.CreateCollection(item.POID, data.Z_PRODORDERSResponse);
             }
 
-            return InputDataCollection.GetCommands();
+            return ServiceResponse.Ok(InputDataCollection.GetCommands());
         }
 
         public List<ProductionOrderPailStatus> StartCommand(StartCommand details) {
             return InputDataCollection.ExportCommand(details.POID, details.Priority.Value, details.QC);
         }
 
-        public async Task<Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>>> GetInitialMaterialsAsync() {
+        public async Task<ServiceResponse> GetInitialMaterialsAsync() {
             var result = await sapClient.Z_INITIALMPGDOWNLOADAsync(new Z_INITIALMPGDOWNLOAD {
                 PLANT = Properties.Settings.Default.Plant
             });
@@ -136,11 +128,12 @@ namespace MpgWebService.Repository.Clients {
             List<MaterialData> materials = result.Z_INITIALMPGDOWNLOADResponse.MATERIALDATA.Select(p => new MaterialData(p)).ToList();
             List<Classification> clasifications = result.Z_INITIALMPGDOWNLOADResponse.CLASIFICATIONS.Select(p => new Classification(p)).ToList();
 
-            return Tuple.Create(names, materials, clasifications);
+            var data = Tuple.Create(names, materials, clasifications);
+            return ServiceResponse.Ok(data);
         }
 
-        public async Task<Tuple<List<AlternativeName>, List<MaterialData>, List<Classification>>> CheckSapMaterialsAsync() {
-            string date = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        public async Task<ServiceResponse> CheckSapMaterialsAsync() {
+            var date = DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             var result = await sapClient.Z_MPGNEWMATERIALSAsync(new Z_MPGNEWMATERIALS {
                 PLANT = Properties.Settings.Default.Plant,
                 START_DATE = date,
@@ -151,10 +144,11 @@ namespace MpgWebService.Repository.Clients {
             List<MaterialData> materials = result.Z_MPGNEWMATERIALSResponse.MATERIALDATA.Select(p => new MaterialData(p)).ToList();
             List<Classification> classifications = result.Z_MPGNEWMATERIALSResponse.CLASIFICATIONS.Select(p => new Classification(p)).ToList();
 
-            return Tuple.Create(names, materials, classifications);
+            var data = Tuple.Create(names, materials, classifications);
+            return ServiceResponse.Ok(data);
         }
 
-        public async Task<List<RiskPhrase>> GetRiskPhrasesAsync() {
+        public async Task<ServiceResponse> GetRiskPhrasesAsync() {
             var phrases = new List<RiskPhrase>();
 
             var result = await sapClient.Z_MPGFRAZERISCAsync(new());
@@ -200,7 +194,7 @@ namespace MpgWebService.Repository.Clients {
                 phrases.Add(item.Item3);
             }
 
-            return phrases;
+            return ServiceResponse.Ok(phrases);
         }
 
         public string GetQC(string POID) {

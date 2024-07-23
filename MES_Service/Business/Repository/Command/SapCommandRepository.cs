@@ -1,17 +1,14 @@
 ﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Repository.Interface;
-using MpgWebService.Repository.Clients;
+using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
-
-using DataEntity.Model.Input;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using MpgWebService.Repository.Clients;
+using MpgWebService.Repository.Interface;
 using System;
+using System.Threading.Tasks;
 
 
-namespace MpgWebService.Repository.Command {
+namespace MpgWebService.Repository.Command
+{
 
     public class SapCommandRepository : ICommandRepository {
 
@@ -19,79 +16,53 @@ namespace MpgWebService.Repository.Command {
         }
 
         public async Task<ServiceResponse> BlockCommand(string POID) {
-            var status = MpgClient.Client.BlockCommand(POID);
-            ProductionOrder po;
+            var mpgResponse = await MpgClient.Client.BlockCommand(POID);
+            var sapResponse = await SapClient.Client.BlockCommand(POID);
 
-            switch (status) {
-                case 0:
-                    var result = SapClient.Client.BlockCommand(POID);
-                    if (result == null) {
-                        return ServiceResponse.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {POID}");
-                    }
-                    break;
-                case 1:
-                    return ServiceResponse.CreateErrorMpg($"Comanda {POID} nu se poate bloca deoarece s-a inceput procesul de productie");
-                case 2:
-                    po = await SapClient.Client.BlockCommand(POID);
-                    MpgClient.Client.CreateCommand(po);
-                    break;
-            }
-
-            return ServiceResponse.CreateOkResponse($"Comanda {POID} a fost blocata cu succes");
+            return ServiceResponse.CombineResponses(mpgResponse, sapResponse);
         }
 
-        public async Task<List<ProductionOrder>> GetCommands(Period period) {
-            var list = await SapClient.Client.GetCommandsAsync(period);
-            list.AddRange(MpgClient.Client.GetCommands(period));
+        public async Task<ServiceResponse> GetCommands(Period period) {
+            var sapResponse = await SapClient.Client.GetCommandsAsync(period);
+            var mpgResponse = await MpgClient.Client.GetCommands(period);
 
-            return list;
+            return ServiceResponse.CombineResponses(sapResponse, mpgResponse);
         }
 
-        public Task<bool> CheckPriority(string Priority) {
-            var result = MpgClient.Client.CheckPriority(Priority);
-            return Task.FromResult(result);
-        }
+        public async Task<ServiceResponse> CheckPriority(string Priority) =>
+            await MpgClient.Client.CheckPriority(Priority);
 
         public async Task<ServiceResponse> CloseCommand(string POID) {
-            var result = MpgClient.Client.PartialMaterials(POID);
+            var result = await MpgClient.Client.PartialMaterials(POID);
             var response = await SapClient.Client.SendPartialProductionAsync(result);
+            var updateResponse = await MpgClient.Client.UpdateTickets(result);
+            var closeResponse = MpgClient.Client.CloseCommand(POID);
 
-            if (!response.Status) {
-                return response;
-            }
-
-            response = MpgClient.Client.UpdateTickets(result);
-
-            if (!response.Status) {
-                return response;
-            }
-
-            response = MpgClient.Client.CloseCommand(POID);
-            return response;
+            throw new NotImplementedException();
         }
 
         public async Task<ServiceResponse> DownloadMaterials() {
             var materials = await SapClient.Client.GetInitialMaterialsAsync();
             var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
-            MpgClient.Client.SaveOrUpdateMaterials(materials);
-            MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materials);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
 
             UpdateDate();
 
-            return ServiceResponse.CreateOkResponse("Materialele au fost descarcate");
+            return ServiceResponse.CombineResponses(materialResponse, phrasesResponse);
         }
 
         public async Task<ServiceResponse> UpdateMaterials() {
             var materails = await SapClient.Client.CheckSapMaterialsAsync();
             var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
-            MpgClient.Client.SaveOrUpdateMaterials(materails);
-            MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materails);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
 
             UpdateDate();
 
-            return ServiceResponse.CreateOkResponse("Materialele au fost actulizate");
+            return ServiceResponse.CombineResponses(materialResponse, phrasesResponse);
         }
 
         private void UpdateDate() {
@@ -99,27 +70,25 @@ namespace MpgWebService.Repository.Command {
             Settings.Default.Save();
         }
 
-        public Task<ProductionOrder> GetCommand(string POID) {
-            return Task.FromResult(MpgClient.Client.GetCommand(POID));
-        }
+        public async Task<ServiceResponse> GetCommand(string POID) =>
+            await MpgClient.Client.GetCommand(POID);
 
-        public Task<string> GetQC(string POID) {
+        public async Task<ServiceResponse> GetQC(string POID) {
             var result = SapClient.Client.GetQC(POID);
+            if (result != null) {
+                return ServiceResponse.Ok(result);
+            }
 
-            result ??= MpgClient.Client.GetQc(POID);
-
-            return Task.FromResult(result);
+            var mpgResponse = await MpgClient.Client.GetQc(POID);
+            return mpgResponse;
         }
 
         public async Task<ServiceResponse> PartialProduction(string POID) {
-            var result = MpgClient.Client.PartialMaterials(POID);
+            var result = await MpgClient.Client.PartialMaterials(POID);
             var response = await SapClient.Client.SendPartialProductionAsync(result);
+            var updateResponse = await MpgClient.Client.UpdateTickets(response);
 
-            if (!response.Status) {
-                return response;
-            }
-
-            MpgClient.Client.UpdateTickets(result);
+            throw new NotImplementedException();
             return response;
         }
 
@@ -136,7 +105,7 @@ namespace MpgWebService.Repository.Command {
                 return ServiceResponse.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {qc.POID}");
             }
 
-            return ServiceResponse.CreateOkResponse("Comanda a fost transmisa");
+            return ServiceResponse.Ok("Comanda a fost transmisa");
         }
     }
 }

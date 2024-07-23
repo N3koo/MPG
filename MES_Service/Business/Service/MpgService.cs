@@ -1,14 +1,12 @@
 ﻿using MpgWebService.Business.Interface.Service;
-using MpgWebService.Presentation.Response.Mpg;
 using MpgWebService.Presentation.Request.MPG;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Repository.Interface;
+using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Repository.Command;
-
-using System.Collections.Generic;
+using MpgWebService.Repository.Interface;
 using System.Threading.Tasks;
 
-namespace MpgWebService.Business.Service {
+namespace MpgWebService.Business.Service
+{
 
     public class MpgService : IMpgService {
 
@@ -18,62 +16,37 @@ namespace MpgWebService.Business.Service {
             repository = new MpgRepository();
         }
 
-        public async Task<PailDto> GetAvailablePail(string POID) => 
+        public async Task<ServiceResponse> GetAvailablePail(string POID) =>
             await repository.GetAvailablePail(POID);
 
-        public async Task<PailQCDto> GetQCPail() =>
+        public async Task<ServiceResponse> GetQCPail() =>
             await repository.GetQCPail();
 
-        public async Task<LabelDto> GetLabel(string POID) =>
+        public async Task<ServiceResponse> GetLabel(string POID) =>
             await repository.GetLabel(POID);
 
-        public async Task<List<MaterialDto>> GetMaterials(string POID) {
-            var result = await repository.GetMaterials(POID);
-            if (result.Count == 0) {
-                ServiceResponse.CreateErrorMes($"Nu exista materiale pentru comanda {POID}").CheckErrors();
-            }
+        public async Task<ServiceResponse> GetMaterials(string POID) =>
+            await repository.GetMaterials(POID);
 
-            return result;
-        }
-
-        public async Task<QcLabelDto> GetQcLabel(string POID, int pailNumber) =>
+        public async Task<ServiceResponse> GetQcLabel(string POID, int pailNumber) =>
             await repository.GetQcLabel(POID, pailNumber);
 
-        public async Task<List<MaterialDto>> GetCorrections(string POID, int pailNumber, string opNo) {
-            var result = await repository.GetCorrections(POID, pailNumber, opNo);
-            if (result.Count == 0) {
-                ServiceResponse.CreateErrorMes("Nu exista corectii").CheckErrors();
-            }
+        public async Task<ServiceResponse> GetCorrections(string POID, int pailNumber, string opNo) =>
+            await repository.GetCorrections(POID, pailNumber, opNo);
 
-            return result;
-        }
+        public async Task<ServiceResponse> SaveCorrection(POConsumption correction) =>
+            await repository.SaveCorrection(correction);
 
-        public async Task<ServiceResponse> SaveCorrection(POConsumption correction) {
-            var result = await repository.SaveCorrection(correction);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) =>
+            await repository.SaveDosageMaterials(materials);
 
-        public async Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) {
-            var result = await repository.SaveDosageMaterials(materials);
-            result.CheckErrors();
-            return result;
-        }
+        public async Task<ServiceResponse> ChangeStatus(string POID, string pail, string status) =>
+            await repository.ChangeStatus(POID, pail, status);
 
-        public async Task<ServiceResponse> ChangeStatus(string POID, string pail, string status) {
-            var result = await repository.ChangeStatus(POID, pail, status);
-            result.CheckErrors();
-            return result;
-        }
-
-        public async Task<List<CoefficientDto>> GetCoefficients() =>
+        public async Task<ServiceResponse> GetCoefficients() =>
             await repository.GetCoefficients();
 
-        public async Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quantities) {
-            var result = await repository.UpdateReserveQuantities(quantities);
-            result.CheckErrors();
-            return result;
-        }
-
+        public async Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quantities) =>
+            await repository.UpdateReserveQuantities(quantities);
     }
 }

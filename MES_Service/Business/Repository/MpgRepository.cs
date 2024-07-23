@@ -1,68 +1,60 @@
-﻿using MpgWebService.Presentation.Response.Mpg;
-using MpgWebService.Presentation.Request.MPG;
-using MpgWebService.Business.Data.Exceptions;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Repository.Interface;
+﻿using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Repository.Clients;
-using MpgWebService.Data.Wrappers;
-
-using System.Collections.Generic;
+using MpgWebService.Repository.Interface;
 using System.Threading.Tasks;
 
 namespace MpgWebService.Repository.Command {
 
     public class MpgRepository : IMpgRepository {
 
-        public Task<Response<PailQCDto>> GetQCPail() =>
-            Task.FromResult(MpgClient.Client.GetFirstPail());
+        public async Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status) {
+            var mpgResponse = await MpgClient.Client.ChangeStatus(POID, indexPail, status);
+            var mesReponse = await MesClient.Client.ChangeStatus(POID, indexPail, status);
 
-        public Task<PailDto> GetAvailablePail(string POID) {
-            var pail = MpgClient.Client.GetAvailablePail(POID) ?? throw new MpgException("No pail available");
-
-            return Task.FromResult(pail);
-        }
-      
-        public Task<ServiceResponse> ChangeStatus(string POID, string indexPail, string status) {
-            MpgClient.Client.ChangeStatus(POID, indexPail, status);
-            MesClient.Client.ChangeStatus(POID, indexPail, status);
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
-        }
-        
-        public Task<ServiceResponse> SaveCorrection(POConsumption materials) {
-            var result = MesClient.Client.SaveCorrection(materials);
-            MpgClient.Client.SaveCorrection(materials, result);
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Ok"));
+            return ServiceResponse.CombineResponses(mpgResponse, mesReponse);
         }
 
-        public Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) {
-            var result = MpgClient.Client.SaveDosageMaterials(materials);
-            MesClient.Client.SaveDosageMaterials(result);
+        public async Task<ServiceResponse> SaveCorrection(POConsumption materials) {
+            var mesResponse = await MesClient.Client.SaveCorrection(materials);
+            var mpgResponse = await MpgClient.Client.SaveCorrection(materials, mesResponse);
 
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost salvate"));
+            return ServiceResponse.CombineResponses(mesResponse, mpgResponse);
         }
 
-        public Task<QcLabelDto> GetQcLabel(string POID, int pailNumber) {
-            var result = MesClient.Client.SetQcStatus(POID, pailNumber) ?? throw new MesException("Could not set QC");
+        public async Task<ServiceResponse> SaveDosageMaterials(POConsumption materials) {
+            var mpgResponse = await MpgClient.Client.SaveDosageMaterials(materials);
+            var mesResponse = await MesClient.Client.SaveDosageMaterials(mpgResponse);
 
-            MpgClient.Client.SetQC(result);
-            return Task.FromResult(result);
+            return ServiceResponse.CombineResponses(mpgResponse, mesResponse);
         }
 
-        public Task<List<MaterialDto>> GetCorrections(string POID, int pailNumber, string opNo) =>
-            Task.FromResult(MesClient.Client.GetCorrections(POID, pailNumber, opNo));
+        public async Task<ServiceResponse> GetQcLabel(string POID, int pailNumber) {
+            var mesResult = await MesClient.Client.SetQcStatus(POID, pailNumber);
+            var mpgResult = await MpgClient.Client.SetQC(mesResult);
 
-        public Task<LabelDto> GetLabel(string POID) =>
-            Task.FromResult(MpgClient.Client.GetLabelData(POID));
+            return ServiceResponse.CombineResponses(mesResult, mpgResult);
+        }
 
-        public Task<List<MaterialDto>> GetMaterials(string POID) =>
-            Task.FromResult(MpgClient.Client.GetMaterials(POID));
+        public async Task<ServiceResponse> GetQCPail() =>
+           await MpgClient.Client.GetFirstPail();
 
-        public Task<List<CoefficientDto>> GetCoefficients() =>
-            Task.FromResult(MesClient.Client.GetCoefficients());
+        public async Task<ServiceResponse> GetAvailablePail(string POID) =>
+            await MpgClient.Client.GetAvailablePail(POID);
 
-        public Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quatities) =>
-            Task.FromResult(MesClient.Client.ReserveQuantities(quatities));
+        public async Task<ServiceResponse> GetCorrections(string POID, int pailNumber, string opNo) =>
+            await MesClient.Client.GetCorrections(POID, pailNumber, opNo);
+
+        public async Task<ServiceResponse> GetLabel(string POID) =>
+            await MpgClient.Client.GetLabelData(POID);
+
+        public async Task<ServiceResponse> GetMaterials(string POID) =>
+            await MpgClient.Client.GetMaterials(POID);
+
+        public async Task<ServiceResponse> GetCoefficients() =>
+            await MesClient.Client.GetCoefficients();
+
+        public async Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quatities) =>
+            await MesClient.Client.ReserveQuantities(quatities);
     }
 }

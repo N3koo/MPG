@@ -1,14 +1,10 @@
 ﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response;
-using MpgWebService.Repository.Interface;
-using MpgWebService.Repository.Clients;
+using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
-
-using DataEntity.Model.Input;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using MpgWebService.Repository.Clients;
+using MpgWebService.Repository.Interface;
 using System;
+using System.Threading.Tasks;
 
 
 namespace MpgWebService.Repository.Command {
@@ -18,94 +14,70 @@ namespace MpgWebService.Repository.Command {
         public MesCommandRepository() {
         }
 
-        public Task<ServiceResponse> BlockCommand(string POID) {
-            var result = (int)MpgClient.Client.BlockCommand(POID).Data;
-            ProductionOrder po;
+        public async Task<ServiceResponse> BlockCommand(string POID) {
+            var mpgResponse = await MpgClient.Client.BlockCommand(POID);
+            var mesResponse = await MesClient.Client.BlockCommand(POID);
 
-            switch (result) {
-                case 0:
-                    _ = MesClient.Client.BlockCommand(POID);
-                    break;
-                case 1:
-                    return Task.FromResult(ServiceResponse.CreateErrorMpg("Nu se poate bloca comanda deoarece s-a inceput procesul de productie"));
-                case 2:
-                    po = MesClient.Client.BlockCommand(POID);
-                    MpgClient.Client.CreateCommand(po);
-                    break;
-            }
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Comanda a fost blocata cu succes"));
+            return ServiceResponse.CombineResponses(mpgResponse, mesResponse);
         }
 
-        public Task<ServiceResponse> GetCommands(Period period) {
-            var orders = MesClient.Client.GetCommands(period);
-            orders.AddRange(MpgClient.Client.GetCommands(period));
-
-            return Task.FromResult(orders);
+        public async Task<ServiceResponse> GetCommands(Period period) {
+            var mesOrders = await MesClient.Client.GetCommands(period);
+            var mpgOrders = await MpgClient.Client.GetCommands(period);
+            return ServiceResponse.CombineResponses(mesOrders, mpgOrders);
         }
 
-        public Task<ServiceResponse> GetCommand(string POID) {
-            var result = MpgClient.Client.GetCommand(POID);
-            return Task.FromResult(result);
+        public async Task<ServiceResponse> GetCommand(string POID) =>
+            await MpgClient.Client.GetCommand(POID);
+
+        public async Task<ServiceResponse> StartCommand(StartCommand qc) {
+            var mesResponse = await MesClient.Client.GetCommandData(qc);
+            var mpgResponse = await MpgClient.Client.StartCommand(mesResponse);
+
+            return mpgResponse;
         }
 
-        public Task<ServiceResponse> StartCommand(StartCommand qc) {
-            var data = MesClient.Client.GetCommandData(qc);
+        public async Task<ServiceResponse> CheckPriority(string Priority) =>
+            await MpgClient.Client.CheckPriority(Priority);
 
-            MpgClient.Client.StartCommand(data);
+        public async Task<ServiceResponse> GetQC(string POID) =>
+            await MesClient.Client.GetQc(POID);
 
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Comanda a fost transmisa"));
+        public async Task<ServiceResponse> CloseCommand(string POID) {
+            var mesResponse = await MesClient.Client.CloseCommand(POID);
+            var mpgResponse = await MpgClient.Client.CloseCommand(POID);
+
+            throw new NotImplementedException();
+            return mpgResponse;
         }
 
-        public Task<ServiceResponse> CheckPriority(string Priority) {
-            var result = MpgClient.Client.CheckPriority(Priority);
-            return Task.FromResult(result);
-        }
+        public async Task<ServiceResponse> PartialProduction(string POID) =>
+            await MesClient.Client.SendPartialProduction(POID);
 
-        public Task<ServiceResponse> GetQC(string POID) {
-            var result = MesClient.Client.GetQc(POID);
-            return Task.FromResult(result);
-        }
+        public async Task<ServiceResponse> DownloadMaterials() {
+            var result = await MesClient.Client.GetMaterials();
+            var phrases = await MesClient.Client.GetRiskPhrases();
+            var vessels = await MesClient.Client.GetStockVessels();
 
-        public Task<ServiceResponse> CloseCommand(string POID) {
-            MesClient.Client.CloseCommand(POID);
-            MpgClient.Client.CloseCommand(POID);
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Comanda a fost inchisa"));
-        }
-
-        public Task<ServiceResponse> PartialProduction(string POID) {
-            MesClient.Client.SendPartialProduction(POID);
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost predate"));
-        }
-
-        public Task<ServiceResponse> DownloadMaterials() {
-            var result = MesClient.Client.GetMaterials();
-            var phrases = MesClient.Client.GetRiskPhrases();
-            var vessels = MesClient.Client.GetStockVessels();
-
-            MpgClient.Client.SaveOrUpdateMaterials(result);
-            MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
-            MpgClient.Client.SaveOrUpdateStockVesel(vessels);
+            var materialUpdate = await MpgClient.Client.SaveOrUpdateMaterials(result);
+            var phrasesUpdate = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var stockVessel = await MpgClient.Client.SaveOrUpdateStockVesel(vessels);
 
             UpdateDate();
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost descarcate"));
+            throw new NotImplementedException();
         }
 
-        public Task<ServiceResponse> UpdateMaterials() {
-            var result = MesClient.Client.GetMaterials();
-            var phrases = MesClient.Client.GetRiskPhrases();
-            var vessels = MesClient.Client.GetStockVessels();
+        public async Task<ServiceResponse> UpdateMaterials() {
+            var result = await MesClient.Client.GetMaterials();
+            var phrases = await MesClient.Client.GetRiskPhrases();
+            var vessels = await MesClient.Client.GetStockVessels();
 
-            MpgClient.Client.SaveOrUpdateMaterials(result);
-            MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
-            MpgClient.Client.SaveOrUpdateStockVesel(vessels);
+            var materialsResponse = await MpgClient.Client.SaveOrUpdateMaterials(result);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var vesselsResponse = await MpgClient.Client.SaveOrUpdateStockVesel(vessels);
 
             UpdateDate();
-
-            return Task.FromResult(ServiceResponse.CreateOkResponse("Materialele au fost actualizate"));
+            throw new NotImplementedException();
         }
 
         private void UpdateDate() {

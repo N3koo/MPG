@@ -1,17 +1,15 @@
 ﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Presentation.Response;
-
-using DataEntity.Model.Input;
-
+using MpgWebService.Presentation.Response.Wrapper;
 using System.Threading.Tasks;
 
-namespace MpgWebService.Repository.Interface {
+namespace MpgWebService.Repository.Interface
+{
 
     public interface ICommandRepository {
 
         Task<ServiceResponse> GetCommands(Period period);
 
-        Task<ProductionOrder> GetCommand(string POID);
+        Task<ServiceResponse> GetCommand(string POID);
 
         Task<ServiceResponse> CheckPriority(string Priority);
 

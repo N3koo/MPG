@@ -1,14 +1,10 @@
-﻿using MpgWebService.Business.Interface.Service;
+﻿using Microsoft.AspNetCore.Mvc;
+using MpgWebService.Business.Interface.Service;
 using MpgWebService.Business.Service;
-
+using MpgWebService.Presentation.Request.MPG;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Mvc;
-using MpgWebService.Presentation.Request.MPG;
-using NHibernate.Mapping;
-
-namespace MpgWebService.Presentation.Controllers
-{
+namespace MpgWebService.Presentation.Controllers {
 
     [ApiController]
     [Route("[Controller]")]
@@ -50,12 +46,12 @@ namespace MpgWebService.Presentation.Controllers
             Ok(await service.SaveCorrection(materials));
 
         [HttpPut("Materials")]
-        public async Task<IActionResult> SaveDosageMaterials([FromBody] POConsumption materials) => 
+        public async Task<IActionResult> SaveDosageMaterials([FromBody] POConsumption materials) =>
             Ok(await service.SaveDosageMaterials(materials));
 
         [HttpPost("{POID}/{pail}")]
         public async Task<IActionResult> SetPailStatus(string POID, string pail, [FromBody] string status) =>
-            Ok((await service.ChangeStatus(POID, pail, status)).Message);
+            Ok(await service.ChangeStatus(POID, pail, status));
 
         [HttpGet("Coefficients")]
         public async Task<IActionResult> GetHeadsCoefficients() =>
@@ -63,6 +59,6 @@ namespace MpgWebService.Presentation.Controllers
 
         [HttpPost("Reserver")]
         public async Task<IActionResult> SetReservedQuantity([FromBody] ReserveTank[] quantities) =>
-            Ok((await service.UpdateReserveQuantities(quantities)).Message);
+            Ok(await service.UpdateReserveQuantities(quantities));
     }
 }
