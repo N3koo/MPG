@@ -1,32 +1,34 @@
 ﻿using MpgWebService.Presentation.Request.MPG;
+using MpgWebService.Presentation.Response.Mpg;
 using MpgWebService.Presentation.Response.Wrapper;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-
-namespace MpgWebService.Repository.Interface
-{
+namespace MpgWebService.Repository.Interface {
 
     public interface IMpgRepository {
-        Task<ServiceResponse> GetQCPail();
 
-        Task<ServiceResponse> GetAvailablePail(string POID);
+        Task<ServiceResponse<PailQCDto>> GetQCPail();
 
-        Task<ServiceResponse> GetLabel(string POID);
+        Task<ServiceResponse<PailDto>> GetAvailablePail(string POID);
 
-        Task<ServiceResponse> GetMaterials(string POID);
+        Task<ServiceResponse<LabelDto>> GetLabel(string POID);
 
-        Task<ServiceResponse> GetQcLabel(string POID, int pailNumber);
+        Task<ServiceResponse<IList<MaterialDto>>> GetMaterials(string POID);
 
-        Task<ServiceResponse> GetCorrections(string POID, int pailNumber, string opNo);
+        Task<ServiceResponse<QcLabelDto>> GetQcLabel(string POID, int pailNumber);
 
-        Task<ServiceResponse> SaveCorrection(POConsumption correction);
+        Task<ServiceResponse<IList<MaterialDto>>> GetCorrections(string POID, int pailNumber, string opNo);
 
-        Task<ServiceResponse> SaveDosageMaterials(POConsumption materials);
+        Task<ServiceResponse<bool>> SaveCorrection(POConsumption correction);
 
-        Task<ServiceResponse> ChangeStatus(string POID, string pailNumber, string status);
+        Task<ServiceResponse<bool>> SaveDosageMaterials(POConsumption materials);
 
-        Task<ServiceResponse> GetCoefficients();
+        Task<ServiceResponse<bool>> ChangeStatus(string POID, string pailNumber, string status);
 
-        Task<ServiceResponse> UpdateReserveQuantities(ReserveTank[] quatities);
+        Task<ServiceResponse<IList<CoefficientDto>>> GetCoefficients();
+
+        Task<ServiceResponse<bool>> UpdateReserveQuantities(ReserveTank[] quatities);
+
     }
 }

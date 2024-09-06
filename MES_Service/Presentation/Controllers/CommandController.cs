@@ -45,7 +45,7 @@ namespace MpgWebService.Presentation.Controllers {
             Ok(await service.CloseCommand(POID));
 
         [HttpPut("Partial/{POID}")]
-        public async Task<IActionResult> PartialProduction(string POID) =>
+        public async Task<IActionResult> StartPartialProduction(string POID) =>
             Ok(await service.StartPartialProduction(POID));
 
         [HttpPost("Materials")]

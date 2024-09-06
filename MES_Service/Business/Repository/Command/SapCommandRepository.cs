@@ -1,68 +1,73 @@
-﻿using MpgWebService.Presentation.Request.Command;
+﻿using DataEntity.Model.Input;
+using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
 using MpgWebService.Repository.Clients;
 using MpgWebService.Repository.Interface;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace MpgWebService.Repository.Command
-{
+namespace MpgWebService.Repository.Command {
 
     public class SapCommandRepository : ICommandRepository {
 
         public SapCommandRepository() {
         }
 
-        public async Task<ServiceResponse> BlockCommand(string POID) {
+        public async Task<ServiceResponse<bool>> BlockCommand(string POID) {
             var mpgResponse = await MpgClient.Client.BlockCommand(POID);
             var sapResponse = await SapClient.Client.BlockCommand(POID);
 
-            return ServiceResponse.CombineResponses(mpgResponse, sapResponse);
+            return ServiceResponse<bool>.CombineResponses(mpgResponse, sapResponse);
         }
 
-        public async Task<ServiceResponse> GetCommands(Period period) {
+        public async Task<ServiceResponse<IList<ProductionOrder>>> GetCommands(Period period) {
             var sapResponse = await SapClient.Client.GetCommandsAsync(period);
             var mpgResponse = await MpgClient.Client.GetCommands(period);
 
-            return ServiceResponse.CombineResponses(sapResponse, mpgResponse);
+            var data = sapResponse.Data.Concat(mpgResponse.Data).ToList();
+            return ServiceResponse<IList<ProductionOrder>>.Ok(data);
         }
 
-        public async Task<ServiceResponse> CheckPriority(string Priority) =>
-            await MpgClient.Client.CheckPriority(Priority);
+        public async Task<ServiceResponse<bool>> CloseCommand(string POID) {
+            var result = await MpgClient.Client.GetPartialMaterials(POID);
+            var partialResponse = await SapClient.Client.SendPartialProductionAsync(result.Data);
 
-        public async Task<ServiceResponse> CloseCommand(string POID) {
-            var result = await MpgClient.Client.PartialMaterials(POID);
-            var response = await SapClient.Client.SendPartialProductionAsync(result);
-            var updateResponse = await MpgClient.Client.UpdateTickets(result);
-            var closeResponse = MpgClient.Client.CloseCommand(POID);
+            if (partialResponse.Errors.Count > 0) {
+                return partialResponse;
+            }
 
-            throw new NotImplementedException();
+            var updateResponse = await MpgClient.Client.UpdateTickets(result.Data.Pails);
+            var closeResponse = await MpgClient.Client.CloseCommand(POID);
+
+            return ServiceResponse<bool>.CombineResponses(partialResponse, updateResponse, closeResponse);
         }
 
-        public async Task<ServiceResponse> DownloadMaterials() {
+        public async Task<ServiceResponse<bool>> DownloadMaterials() {
             var materials = await SapClient.Client.GetInitialMaterialsAsync();
             var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
-            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materials);
-            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materials.Data);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases.Data);
 
             UpdateDate();
 
-            return ServiceResponse.CombineResponses(materialResponse, phrasesResponse);
+            return ServiceResponse<bool>.CombineResponses(materialResponse, phrasesResponse);
         }
 
-        public async Task<ServiceResponse> UpdateMaterials() {
+        public async Task<ServiceResponse<bool>> UpdateMaterials() {
             var materails = await SapClient.Client.CheckSapMaterialsAsync();
             var phrases = await SapClient.Client.GetRiskPhrasesAsync();
 
-            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materails);
-            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
+            var materialResponse = await MpgClient.Client.SaveOrUpdateMaterials(materails.Data);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases.Data);
 
             UpdateDate();
 
-            return ServiceResponse.CombineResponses(materialResponse, phrasesResponse);
+            return ServiceResponse<bool>.CombineResponses(materialResponse, phrasesResponse);
         }
 
         private void UpdateDate() {
@@ -70,42 +75,45 @@ namespace MpgWebService.Repository.Command
             Settings.Default.Save();
         }
 
-        public async Task<ServiceResponse> GetCommand(string POID) =>
-            await MpgClient.Client.GetCommand(POID);
-
-        public async Task<ServiceResponse> GetQC(string POID) {
+        public async Task<ServiceResponse<string>> GetQC(string POID) {
             var result = SapClient.Client.GetQC(POID);
             if (result != null) {
-                return ServiceResponse.Ok(result);
+                return ServiceResponse<string>.Ok(result);
             }
 
             var mpgResponse = await MpgClient.Client.GetQc(POID);
             return mpgResponse;
         }
 
-        public async Task<ServiceResponse> PartialProduction(string POID) {
-            var result = await MpgClient.Client.PartialMaterials(POID);
-            var response = await SapClient.Client.SendPartialProductionAsync(result);
-            var updateResponse = await MpgClient.Client.UpdateTickets(response);
+        public async Task<ServiceResponse<bool>> PartialProduction(string POID) {
+            var result = await MpgClient.Client.GetPartialMaterials(POID);
 
-            throw new NotImplementedException();
-            return response;
+            var response = await SapClient.Client.SendPartialProductionAsync(result.Data);
+            var updateResponse = await MpgClient.Client.UpdateTickets(result.Data.Pails);
+
+            return ServiceResponse<bool>.CombineResponses(response, updateResponse);
         }
 
-        public async Task<ServiceResponse> StartCommand(StartCommand qc) {
+        public async Task<ServiceResponse<bool>> StartCommand(StartCommand qc) {
             var list = SapClient.Client.StartCommand(qc);
 
             if (list.Count == 0) {
-                return ServiceResponse.CreateErrorMpg($"Nu au fost inserate datele in MPG pentru comanda {qc.POID}");
+                return ServiceResponse<bool>.CreateErrorSap($"Nu au fost inserate datele in MPG pentru comanda {qc.POID}");
             }
 
             var result = await SapClient.Client.SetCommandStatusAsync(qc.POID, Settings.Default.CMD_STARTED);
 
             if (!result) {
-                return ServiceResponse.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {qc.POID}");
+                return ServiceResponse<bool>.CreateErrorSap($"Nu s-a putut actualiza statusul pentru comanda {qc.POID}");
             }
 
-            return ServiceResponse.Ok("Comanda a fost transmisa");
+            return ServiceResponse<bool>.Ok(true);
         }
+
+        public async Task<ServiceResponse<ProductionOrder>> GetCommand(string POID) =>
+            await MpgClient.Client.GetCommand(POID);
+
+        public async Task<ServiceResponse<bool>> CheckPriority(string Priority) =>
+            await MpgClient.Client.CheckPriority(Priority);
     }
 }

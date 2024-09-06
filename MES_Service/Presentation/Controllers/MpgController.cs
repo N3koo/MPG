@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MpgWebService.Business.Interface.Service;
-using MpgWebService.Business.Service;
 using MpgWebService.Presentation.Request.MPG;
 using System.Threading.Tasks;
 
@@ -13,8 +12,8 @@ namespace MpgWebService.Presentation.Controllers {
 
         private readonly IMpgService service;
 
-        public MpgController() {
-            service = new MpgService();
+        public MpgController(IMpgService service) {
+            this.service = service;
         }
 
         [HttpGet("Pails/QC")]

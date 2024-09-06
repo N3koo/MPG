@@ -1,11 +1,13 @@
 ﻿using MpgWebService.Business.Interface.Service;
+using MpgWebService.Business.Interface.Settings;
+using MpgWebService.Data.Extension;
 using MpgWebService.Presentation.Request.Command;
+using MpgWebService.Presentation.Response.Command;
 using MpgWebService.Presentation.Response.Wrapper;
-using MpgWebService.Properties;
-using MpgWebService.Repository.Command;
 using MpgWebService.Repository.Interface;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
 
 namespace MpgWebService.Business.Service {
 
@@ -13,49 +15,56 @@ namespace MpgWebService.Business.Service {
 
         private readonly ICommandRepository repository;
 
-        public CommandService() {
-            repository = new MesCommandRepository();
-        }
+        private readonly ISettings settings;
 
-        public CommandService(ICommandRepository repository) {
+        public CommandService(ICommandRepository repository, ISettings settings) {
             this.repository = repository;
+            this.settings = settings;
         }
 
-        public async Task<ServiceResponse> BlockCommand(string POID) =>
-            await repository.BlockCommand(POID);
+        public async Task<ServiceResponse<bool>> DownloadMaterials() {
+            var data = settings.Update;
 
-        public async Task<ServiceResponse> CheckPriority(string priority) =>
-            await repository.CheckPriority(priority);
+            return string.IsNullOrEmpty(data) ? await repository.DownloadMaterials() :
+                                                await repository.UpdateMaterials();
+        }
 
-        public async Task<ServiceResponse> CloseCommand(string POID) =>
-            await repository.CloseCommand(POID);
-
-        public async Task<ServiceResponse> DownloadMaterials() {
-            var data = Settings.Default.Update;
-            ServiceResponse response;
-
-            if (string.IsNullOrEmpty(data)) {
-                response = await repository.DownloadMaterials();
-            } else {
-                response = await repository.UpdateMaterials();
+        public async Task<ServiceResponse<ProductionOrderDto>> GetCommand(string POID) {
+            var result = await repository.GetCommand(POID);
+            if (result.Errors != null) {
+                return ServiceResponse<ProductionOrderDto>.GetErrors(result.Errors);
             }
 
-            return response;
+            return ServiceResponse<ProductionOrderDto>.Ok(result.Data.AsDto());
         }
 
-        public async Task<ServiceResponse> GetCommand(string POID) =>
-            await repository.GetCommand(POID);
+        public async Task<ServiceResponse<IList<ProductionOrderDto>>> GetCommands(Period period) {
+            var result = await repository.GetCommands(period);
+            if (result.Errors != null) {
+                return ServiceResponse<IList<ProductionOrderDto>>.GetErrors(result.Errors);
+            }
 
-        public async Task<ServiceResponse> GetCommands(Period period) =>
-            await repository.GetCommands(period);
+            var data = result.Data.Select(x => x.AsDto()).ToList();
+            return ServiceResponse<IList<ProductionOrderDto>>.Ok(data);
+        }
 
-        public async Task<ServiceResponse> GetQC(string POID) =>
+        public async Task<ServiceResponse<bool>> BlockCommand(string POID) =>
+           await repository.BlockCommand(POID);
+
+        public async Task<ServiceResponse<bool>> CheckPriority(string priority) =>
+            await repository.CheckPriority(priority);
+
+        public async Task<ServiceResponse<bool>> CloseCommand(string POID) =>
+            await repository.CloseCommand(POID);
+
+        public async Task<ServiceResponse<string>> GetQC(string POID) =>
             await repository.GetQC(POID);
 
-        public async Task<ServiceResponse> StartCommand(StartCommand qc) =>
+        public async Task<ServiceResponse<bool>> StartCommand(StartCommand qc) =>
             await repository.StartCommand(qc);
 
-        public async Task<ServiceResponse> StartPartialProduction(string POID) =>
+        public async Task<ServiceResponse<bool>> StartPartialProduction(string POID) =>
             await repository.PartialProduction(POID);
+
     }
 }

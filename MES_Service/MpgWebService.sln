@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MpgWebService", "MpgWebServ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataEntity", "..\DataEntity\DataEntity.csproj", "{300167D2-0358-42FB-AC06-29E4B3AB1700}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServiceTest", "..\WebServiceTest\WebServiceTest.csproj", "{F25736BA-407F-4435-9D0F-337D1E6D15DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{300167D2-0358-42FB-AC06-29E4B3AB1700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{300167D2-0358-42FB-AC06-29E4B3AB1700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{300167D2-0358-42FB-AC06-29E4B3AB1700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F25736BA-407F-4435-9D0F-337D1E6D15DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25736BA-407F-4435-9D0F-337D1E6D15DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25736BA-407F-4435-9D0F-337D1E6D15DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25736BA-407F-4435-9D0F-337D1E6D15DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

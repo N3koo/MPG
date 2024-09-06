@@ -1,9 +1,12 @@
-﻿using MpgWebService.Presentation.Request.Command;
+﻿using DataEntity.Model.Input;
+using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
 using MpgWebService.Repository.Clients;
 using MpgWebService.Repository.Interface;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 
@@ -14,71 +17,73 @@ namespace MpgWebService.Repository.Command {
         public MesCommandRepository() {
         }
 
-        public async Task<ServiceResponse> BlockCommand(string POID) {
+        public async Task<ServiceResponse<bool>> BlockCommand(string POID) {
             var mpgResponse = await MpgClient.Client.BlockCommand(POID);
             var mesResponse = await MesClient.Client.BlockCommand(POID);
 
-            return ServiceResponse.CombineResponses(mpgResponse, mesResponse);
+            return ServiceResponse<bool>.CombineResponses(mpgResponse, mesResponse);
         }
 
-        public async Task<ServiceResponse> GetCommands(Period period) {
+        public async Task<ServiceResponse<IList<ProductionOrder>>> GetCommands(Period period) {
             var mesOrders = await MesClient.Client.GetCommands(period);
             var mpgOrders = await MpgClient.Client.GetCommands(period);
-            return ServiceResponse.CombineResponses(mesOrders, mpgOrders);
+
+            var data = mesOrders.Data.Concat(mpgOrders.Data).ToList();
+            return ServiceResponse<IList<ProductionOrder>>.Ok(data);
         }
 
-        public async Task<ServiceResponse> GetCommand(string POID) =>
-            await MpgClient.Client.GetCommand(POID);
-
-        public async Task<ServiceResponse> StartCommand(StartCommand qc) {
+        public async Task<ServiceResponse<bool>> StartCommand(StartCommand qc) {
             var mesResponse = await MesClient.Client.GetCommandData(qc);
-            var mpgResponse = await MpgClient.Client.StartCommand(mesResponse);
-
-            return mpgResponse;
+            return await MpgClient.Client.StartCommand(mesResponse.Data);
         }
 
-        public async Task<ServiceResponse> CheckPriority(string Priority) =>
-            await MpgClient.Client.CheckPriority(Priority);
-
-        public async Task<ServiceResponse> GetQC(string POID) =>
-            await MesClient.Client.GetQc(POID);
-
-        public async Task<ServiceResponse> CloseCommand(string POID) {
+        public async Task<ServiceResponse<bool>> CloseCommand(string POID) {
             var mesResponse = await MesClient.Client.CloseCommand(POID);
             var mpgResponse = await MpgClient.Client.CloseCommand(POID);
 
-            throw new NotImplementedException();
-            return mpgResponse;
+            return ServiceResponse<bool>.CombineResponses(mesResponse, mpgResponse);
         }
 
-        public async Task<ServiceResponse> PartialProduction(string POID) =>
+        public async Task<ServiceResponse<bool>> DownloadMaterials() {
+            var result = await MesClient.Client.GetMaterials();
+            var phrases = await MesClient.Client.GetRiskPhrases();
+            var vessels = await MesClient.Client.GetStockVessels();
+
+            var materialUpdate = await MpgClient.Client.SaveOrUpdateMaterials(result.Data);
+            var phrasesUpdate = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases.Data);
+            var stockVessel = await MpgClient.Client.SaveOrUpdateStockVesel(vessels.Data);
+
+            UpdateDate();
+
+            return ServiceResponse<bool>.CombineResponses(materialUpdate, phrasesUpdate, stockVessel);
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateMaterials() {
+            var result = await MesClient.Client.GetMaterials();
+            var phrases = await MesClient.Client.GetRiskPhrases();
+            var vessels = await MesClient.Client.GetStockVessels();
+
+            var materialsResponse = await MpgClient.Client.SaveOrUpdateMaterials(result.Data);
+            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases.Data);
+            var vesselsResponse = await MpgClient.Client.SaveOrUpdateStockVesel(vessels.Data);
+
+            UpdateDate();
+
+            return ServiceResponse<bool>.CombineResponses(materialsResponse, phrasesResponse, vesselsResponse);
+        }
+
+        public async Task<ServiceResponse<bool>> PartialProduction(string POID) =>
             await MesClient.Client.SendPartialProduction(POID);
 
-        public async Task<ServiceResponse> DownloadMaterials() {
-            var result = await MesClient.Client.GetMaterials();
-            var phrases = await MesClient.Client.GetRiskPhrases();
-            var vessels = await MesClient.Client.GetStockVessels();
+        //TODO: Check MES first
+        public async Task<ServiceResponse<ProductionOrder>> GetCommand(string POID) =>
+         await MpgClient.Client.GetCommand(POID);
 
-            var materialUpdate = await MpgClient.Client.SaveOrUpdateMaterials(result);
-            var phrasesUpdate = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
-            var stockVessel = await MpgClient.Client.SaveOrUpdateStockVesel(vessels);
+        public async Task<ServiceResponse<bool>> CheckPriority(string Priority) =>
+            await MpgClient.Client.CheckPriority(Priority);
 
-            UpdateDate();
-            throw new NotImplementedException();
-        }
-
-        public async Task<ServiceResponse> UpdateMaterials() {
-            var result = await MesClient.Client.GetMaterials();
-            var phrases = await MesClient.Client.GetRiskPhrases();
-            var vessels = await MesClient.Client.GetStockVessels();
-
-            var materialsResponse = await MpgClient.Client.SaveOrUpdateMaterials(result);
-            var phrasesResponse = await MpgClient.Client.SaveOrUpdateRiskPhrases(phrases);
-            var vesselsResponse = await MpgClient.Client.SaveOrUpdateStockVesel(vessels);
-
-            UpdateDate();
-            throw new NotImplementedException();
-        }
+        public async Task<ServiceResponse<string>> GetQC(string POID) =>
+            await MesClient.Client.GetQc(POID);
 
         private void UpdateDate() {
             Settings.Default.Update = DateTime.Now.ToString();

@@ -3,8 +3,8 @@ using DataEntity.Model.Input;
 using DataEntity.Model.Output;
 using DataEntity.Model.Types;
 using MpgWebService.Business.Data.Extension;
+using MpgWebService.Business.Data.JoinData;
 using MpgWebService.Business.Data.Utils;
-using MpgWebService.Data.Extension;
 using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Presentation.Request.MPG;
 using MpgWebService.Presentation.Response.Mpg;
@@ -31,28 +31,26 @@ namespace MpgWebService.Repository.Clients {
 
         public static readonly MesClient Client = new();
 
-        public async Task<ServiceResponse> GetCommands(Period period) {
+        public virtual async Task<ServiceResponse<IList<ProductionOrder>>> GetCommands(Period period) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
                 var result = await session.Query<ProductionOrder>().Where(p => p.PlannedStartDate >= period.StartDate &&
                     p.PlannedEndDate <= period.EndDate && p.Status == "ELB").ToListAsync();
-                var data = result.Select(p => p.AsProductionDto()).ToList();
 
-                return ServiceResponse.CreateResponse(data, "Nu au fost gasite comenzi in perioada selectata");
+                return ServiceResponse<IList<ProductionOrder>>.CreateResponse(result, "Nu au fost gasite comenzi in perioada selectata");
 
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<IList<ProductionOrder>>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> SaveDosageMaterials(ServiceResponse response) {
+        public virtual async Task<ServiceResponse<bool>> SaveDosageMaterials(IList<ProductionOrderConsumption> materials) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
-                var materials = (List<ProductionOrderConsumption>)response.Data;
                 foreach (var material in materials) {
                     var stock = await session.Query<StockVessel>().FirstAsync(p => p.VesselCod == material.Item);
                     stock.ItemQty -= material.ItemQty;
@@ -62,25 +60,25 @@ namespace MpgWebService.Repository.Clients {
                 }
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok("Materialel au fost salvate");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetQc(string POID) {
+        public virtual async Task<ServiceResponse<string>> GetQc(string POID) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
                 var header = await session.Query<ProductionOrderLotHeader>().FirstAsync(p => p.POID == POID);
-                return ServiceResponse.CreateResponse(header?.PozQC, "Nu exista QC setat");
+                return ServiceResponse<string>.CreateResponse(header.PozQC, "Nu exista QC setat");
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<string>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> SaveCorrection(POConsumption materials) {
+        public virtual async Task<ServiceResponse<ProductionOrderCorection>> SaveCorrection(POConsumption materials) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -97,13 +95,13 @@ namespace MpgWebService.Repository.Clients {
                 await session.SaveAsync(correction);
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok(correction);
+                return ServiceResponse<ProductionOrderCorection>.Ok(correction);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<ProductionOrderCorection>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> SetQcStatus(string POID, int pailNumber) {
+        public virtual async Task<ServiceResponse<QcLabelDto>> SetQcStatus(string POID, int pailNumber) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -131,16 +129,16 @@ namespace MpgWebService.Repository.Clients {
                         .SetInt32("pail", pailNumber)
                         .SetString("POID", POID).ListAsync<QcLabelDto>();
 
-                    return ServiceResponse.CreateResponse(label[0], "Nu exista eticheta de QC disponibila");
+                    return ServiceResponse<QcLabelDto>.CreateResponse(label[0], "Nu exista eticheta de QC disponibila");
                 }
 
-                return ServiceResponse.NotFound("Nu exista operatii de QC disponibile");
+                return ServiceResponse<QcLabelDto>.NotFound("Nu exista operatii de QC disponibile");
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<QcLabelDto>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetCorrections(string POID, int pailNumber, string opNo) {
+        public virtual async Task<ServiceResponse<IList<MaterialDto>>> GetCorrections(string POID, int pailNumber, string opNo) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -166,13 +164,13 @@ namespace MpgWebService.Repository.Clients {
                     .SetResultTransformer(Transformers.AliasToBean<MaterialDto>())
                     .SetInt64("id", qc.ID).ListAsync<MaterialDto>();
 
-                return ServiceResponse.CreateResponse(result.ToList(), $"Nu exista corectii disponibile pentru comanda {POID}");
+                return ServiceResponse<IList<MaterialDto>>.CreateResponse(result.ToList(), $"Nu exista corectii disponibile pentru comanda {POID}");
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<IList<MaterialDto>>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> ChangeStatus(string POID, string pailIndex, string status) {
+        public virtual async Task<ServiceResponse<bool>> ChangeStatus(string POID, string pailIndex, string status) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -183,13 +181,13 @@ namespace MpgWebService.Repository.Clients {
                 await session.UpdateAsync(pail);
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok($"Statusul pentru galeata {pailIndex} din comanda {POID} a fost actualizat");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> BlockCommand(string POID) {
+        public virtual async Task<ServiceResponse<bool>> BlockCommand(string POID) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -197,7 +195,7 @@ namespace MpgWebService.Repository.Clients {
                 var po = await session.Query<ProductionOrder>().FirstOrDefaultAsync(p => p.POID == POID);
 
                 if (po == null) {
-                    return ServiceResponse.NotFound($"Comanda {POID} nu exista");
+                    return ServiceResponse<bool>.NotFound($"Comanda {POID} nu exista");
                 }
 
                 po.Status = "BLOC";
@@ -208,13 +206,13 @@ namespace MpgWebService.Repository.Clients {
                 await session.UpdateAsync(po);
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok($"Comanda {POID} a fost inchisa");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetCommandData(StartCommand command) {
+        public virtual async Task<ServiceResponse<CommandData>> GetCommandData(StartCommand command) {
             try {
                 string poid = command.POID;
                 InputData data = new();
@@ -238,14 +236,14 @@ namespace MpgWebService.Repository.Clients {
                 await session.UpdateAsync(data.Order);
                 await transaction.CommitAsync();
 
-                var result = Tuple.Create(data, pails);
-                return ServiceResponse.Ok(result);
+                var result = new CommandData() { Data = data, Pails = pails };
+                return ServiceResponse<CommandData>.Ok(result);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<CommandData>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> SendPartialProduction(string POID) {
+        public virtual async Task<ServiceResponse<bool>> SendPartialProduction(string POID) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -254,25 +252,25 @@ namespace MpgWebService.Repository.Clients {
                 _ = await session.SaveAsync(trigger);
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok($"Predare partiala pentru comanda {POID} a fost inceputa");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetStockVessels() {
+        public virtual async Task<ServiceResponse<IList<StockVessel>>> GetStockVessels() {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
                 var stocks = await session.Query<StockVessel>().ToListAsync();
-                return ServiceResponse.CreateResponse(stocks, "Nu exista vase de stocare definite");
+                return ServiceResponse<IList<StockVessel>>.CreateResponse(stocks, "Nu exista vase de stocare definite");
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<IList<StockVessel>>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> CloseCommand(string POID) {
+        public virtual async Task<ServiceResponse<bool>> CloseCommand(string POID) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -285,25 +283,25 @@ namespace MpgWebService.Repository.Clients {
                 await session.UpdateAsync(po);
                 await transaction.CommitAsync();
 
-                return ServiceResponse.Ok($"Comanda {POID} a fost inchisa");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetRiskPhrases() {
+        public virtual async Task<ServiceResponse<IList<RiskPhrase>>> GetRiskPhrases() {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
                 var risks = await session.Query<RiskPhrase>().ToListAsync();
-                return ServiceResponse.CreateResponse(risks, "Nu exista fraze de risk disponibile");
+                return ServiceResponse<IList<RiskPhrase>>.CreateResponse(risks, "Nu exista fraze de risk disponibile");
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<IList<RiskPhrase>>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetMaterials() {
+        public virtual async Task<ServiceResponse<UpdateData>> GetMaterials() {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transacttion = session.BeginTransaction();
@@ -320,28 +318,26 @@ namespace MpgWebService.Repository.Clients {
 
                 await transacttion.CommitAsync();
 
-                var result = Tuple.Create(alternative, materials, clasification);
-                return ServiceResponse.Ok(result);
+                var result = new UpdateData(alternative, materials, clasification);
+                return ServiceResponse<UpdateData>.Ok(result);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<UpdateData>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> GetCoefficients() {
+        public virtual async Task<ServiceResponse<IList<StockVessel>>> GetCoefficients() {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
 
                 var stocks = await session.Query<StockVessel>().ToListAsync();
-                var result = stocks.Select(x => CoefficientDto.FromStockVessel(x)).ToList();
-
-                return ServiceResponse.Ok(result);
+                return ServiceResponse<IList<StockVessel>>.Ok(stocks);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<IList<StockVessel>>.CreateErrorMes(ex.Message);
             }
         }
 
-        public async Task<ServiceResponse> ReserveQuantities(ReserveTank[] quantities) {
+        public virtual async Task<ServiceResponse<bool>> ReserveQuantities(ReserveTank[] quantities) {
             try {
                 using var session = MesDb.Instance.GetSession();
                 using var transaction = session.BeginTransaction();
@@ -354,9 +350,9 @@ namespace MpgWebService.Repository.Clients {
                 }
 
                 await transaction.CommitAsync();
-                return ServiceResponse.Ok("Cantitatile au fost actualizate");
+                return ServiceResponse<bool>.Ok(true);
             } catch (Exception ex) {
-                return ServiceResponse.CreateErrorMes(ex.Message);
+                return ServiceResponse<bool>.CreateErrorMes(ex.Message);
             }
         }
     }

@@ -1,6 +1,5 @@
-﻿using DataEntity.Model.Output;
-using DataEntity.Model.Input;
-
+﻿using DataEntity.Model.Input;
+using DataEntity.Model.Output;
 using System.Collections.Generic;
 using System.Linq;
 

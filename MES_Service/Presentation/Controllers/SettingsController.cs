@@ -1,9 +1,6 @@
-﻿using MpgWebService.Presentation.Request.Settings;
+﻿using Microsoft.AspNetCore.Mvc;
 using MpgWebService.Business.Interface.Service;
-using MpgWebService.Business.Service;
-
-using Microsoft.AspNetCore.Mvc;
-
+using MpgWebService.Presentation.Request.Settings;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -16,8 +13,8 @@ namespace MpgWebService.Presentation.Controllers {
 
         private readonly ISettingsService service;
 
-        public SettingsController() {
-            service = new SettingsService();
+        public SettingsController(ISettingsService service) {
+            this.service = service;
         }
 
         [HttpGet]

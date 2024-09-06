@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MpgWebService.Business.Interface.Service;
-using MpgWebService.Business.Service;
 using MpgWebService.Presentation.Request.Command;
 using System.Threading.Tasks;
 
@@ -13,8 +12,8 @@ namespace MpgWebService.Presentation.Controllers {
 
         private readonly IProductionService service;
 
-        public ProductionController() {
-            service = new ProductionService();
+        public ProductionController(IProductionService service) {
+            this.service = service;
         }
 
         [HttpGet]

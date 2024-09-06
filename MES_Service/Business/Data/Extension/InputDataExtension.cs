@@ -1,12 +1,9 @@
-﻿using MpgWebService.Presentation.Request.Command;
-using MpgWebService.Properties;
-
-using DataEntity.Model.Output;
+﻿using DataEntity.Model.Output;
 using DataEntity.Model.Types;
-
+using MpgWebService.Presentation.Request.Command;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace MpgWebService.Business.Data.Extension {
 
@@ -14,7 +11,7 @@ namespace MpgWebService.Business.Data.Extension {
 
         public static List<ProductionOrderPailStatus> CreatePails(this InputData data, StartCommand command) {
             List<ProductionOrderPailStatus> pails = new();
-            var settings = Settings.Default;
+            var settings = Properties.Settings.Default;
             var now = DateTime.Now;
 
             int size = data.Order.PlannedQtyBUC;
