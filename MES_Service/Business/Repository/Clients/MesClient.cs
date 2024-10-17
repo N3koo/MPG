@@ -10,10 +10,10 @@ using MpgWebService.Presentation.Request.MPG;
 using MpgWebService.Presentation.Response.Mpg;
 using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Properties;
+using NHibernate.Linq;
 using NHibernate.Transform;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,7 +25,7 @@ namespace MpgWebService.Repository.Clients {
             "FROM MES2MPG_Correction correction INNER JOIN MES2MPG_StockVessel stock ON stock.MaterialID = correction.RawMaterialID " +
             "WHERE correction.CorrectionID = (:id)";
 
-        private readonly static string LabelQuery = "SELECT a.PlantID, a.MaterialID, c.ItemQty, b.StartDate, a.PODescription, a.POID, b.PailNumber, a.KoberLot, b.MES_Sample_ID, b.Op_No, c.OpDescr" +
+        private readonly static string LabelQuery = "SELECT a.PlantID, a.MaterialID, c.ItemQty, b.StartDate, a.PODescription, a.POID, b.PailNumber, a.KoberLot, b.MES_Sample_ID, b.Op_No, c.OpDescr " +
             "FROM MES2MPG_ProductionOrders a INNER JOIN MPG2MES_ProductionOrderPailStatus b ON a.POID = b.POID INNER JOIN MES2MPG_ProductionOrderFinalItems c ON a.POID = c.POID " +
             "WHERE b.PailNumber = (:pail) AND a.POID = '(:POID)'";
 
@@ -127,7 +127,8 @@ namespace MpgWebService.Repository.Clients {
                     var label = await session.CreateSQLQuery(LabelQuery)
                         .SetResultTransformer(Transformers.AliasToBean<QcLabelDto>())
                         .SetInt32("pail", pailNumber)
-                        .SetString("POID", POID).ListAsync<QcLabelDto>();
+                        .SetString("POID", POID)
+                        .ListAsync<QcLabelDto>();
 
                     return ServiceResponse<QcLabelDto>.CreateResponse(label[0], "Nu exista eticheta de QC disponibila");
                 }

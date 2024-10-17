@@ -7,6 +7,7 @@
         public string PailNumber { init; get; }
         public decimal MixingTime { init; get; }
         public decimal PailWeight { init; get; }
+        public decimal GrossWeight { init; get; }
 
     }
 }
