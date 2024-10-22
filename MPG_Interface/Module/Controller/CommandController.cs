@@ -1,19 +1,21 @@
-﻿using MPG_Interface.Module.Data.Output;
-using MPG_Interface.Module.Data.Input;
-using MPG_Interface.Module.Visual;
-using MPG_Interface.Module.Logic;
+﻿using log4net;
 using MPG_Interface.Module.Data;
+using MPG_Interface.Module.Data.Input;
+using MPG_Interface.Module.Data.Output;
+using MPG_Interface.Module.Logic;
+using MPG_Interface.Module.Visual;
 using MPG_Interface.Xaml;
 
 using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Threading.Tasks;
 using System.Globalization;
-using System.Windows;
 using System.Linq;
-using log4net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
-namespace MPG_Interface.Module.Interfaces {
+namespace MPG_Interface.Module.Interfaces
+{
 
     /// <summary>
     /// Controller for manipulating data for the main window view
@@ -277,10 +279,19 @@ namespace MPG_Interface.Module.Interfaces {
         /// <returns>Task that is necessary to be awaited</returns>
         public async Task GetCommands() {
             var period = FactoryData.CreatePeriod(start.SelectedDate.Value, end.SelectedDate.Value);
-            oldList = await RestClient.Client.GetCommands(period);
+            var commandsResult = await RestClient.Client.GetCommands(period);
+            if (commandsResult.Errors == null)
+            {
+                oldList = commandsResult.Data;
+            }
+            else
+            {
+                Alerts.ShowMessage(commandsResult.Errors.Aggregate(new StringBuilder(), (current, next) => { return current.AppendLine($"{next.Type} - {next.Message}"); }).ToString());
+            }
+
             dataGrid.ItemsSource = oldList;
 
-            if (oldList?.Count == 0) {
+            if (oldList == null || oldList?.Count == 0) {
                 Alerts.ShowMessage("Nu exista comenzi in perioada selectata");
             }
         }

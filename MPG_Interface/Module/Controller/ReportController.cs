@@ -11,6 +11,9 @@ using System.Globalization;
 using System.Windows;
 using MPG_Interface.Module.Data.Input;
 using MPG_Interface.Module.Data.Output;
+using MPG_Interface.Module.Visual;
+using System.Text;
+using System.Linq;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -64,7 +67,19 @@ namespace MPG_Interface.Module.Controller {
         /// </summary>
         public async Task SetData() {
             Period period = FactoryData.CreatePeriod(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
-            dataGrid.ItemsSource = await RestClient.Client.GetReport(period);
+            var reportResults = await RestClient.Client.GetReport(period);
+
+            if (reportResults.Errors == null)
+            {
+                if (reportResults.Data != null && reportResults.Data.Count > 0)
+                    dataGrid.ItemsSource = reportResults.Data;
+                else
+                    Alerts.ShowMessage("Nu exista rapoarte in perioada selectata");
+            }
+            else
+            {
+                Alerts.ShowMessage(reportResults.Errors.Aggregate(new StringBuilder(), (current, next) => { return current.AppendLine($"Error [{next.Type}] - {next.Message}"); }).ToString());
+            }
         }
 
         /// <summary>
@@ -73,16 +88,21 @@ namespace MPG_Interface.Module.Controller {
         /// <returns></returns>
         public async Task ShowDetails() {
             ReportCommand item = dataGrid.SelectedItem as ReportCommand;
-            List<ReportMaterial> materials;
+            ServiceResponse<List<ReportMaterial>> materialsResponse;
 
             if (item.POID_ID != "-1") {
                 int pail = int.Parse(item.POID.Split("_")[1], CultureInfo.InvariantCulture);
-                materials = await RestClient.Client.GetMaterialsForPail(item.POID_ID, pail);
+                materialsResponse = await RestClient.Client.GetMaterialsForPail(item.POID_ID, pail);
             } else {
-                materials = await RestClient.Client.GetMaterialsForCommand(item.POID);
+                materialsResponse = await RestClient.Client.GetMaterialsForCommand(item.POID);
             }
 
-            ConsumptionWindow.CreateConsumption(materials);
+            if (materialsResponse?.Data != null)
+                ConsumptionWindow.CreateConsumption(materialsResponse.Data);
+            else if (materialsResponse?.Errors != null)
+                Alerts.ShowMessage(materialsResponse?.Errors.Aggregate(new StringBuilder(), (current, next) => { return current.AppendLine($"Error [{next.Type}] - {next.Message}"); }).ToString());
+            else
+                Alerts.ShowMessage("Eroare necunoscuta");
         }
     }
 }

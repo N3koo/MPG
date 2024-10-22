@@ -34,8 +34,8 @@ namespace MPG_Interface.Module.Data {
 
         public static NameValueCollection CreateQueryFromPeriod(Period period) {
             NameValueCollection query = HttpUtility.ParseQueryString(string.Empty);
-            Array.ForEach(period.GetType().GetProperties(),
-                item => query.Add(item.Name, item.GetValue(period, null).ToString()));
+            query.Add(nameof(Period.StartDate), period.StartDate.ToString("s"));
+            query.Add(nameof(Period.EndDate), period.EndDate.ToString("s"));
 
             return query;
         }
@@ -44,8 +44,6 @@ namespace MPG_Interface.Module.Data {
             return new() {
                 StartDate = start,
                 EndDate = end,
-                PageSize = 10,
-                PageNumber = 1
             };
         }
 

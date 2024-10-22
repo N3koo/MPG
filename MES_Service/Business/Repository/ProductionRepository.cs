@@ -6,9 +6,9 @@ using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Presentation.Response.Production;
 using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Repository.Interface;
+using NHibernate.Linq;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
