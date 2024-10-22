@@ -1,11 +1,14 @@
 ﻿using MPG_Interface.Module.Data.Input;
 using MPG_Interface.Module.Logic;
-
+using MPG_Interface.Module.Visual;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MPG_Interface.Xaml {
+namespace MPG_Interface.Xaml
+{
 
     /// <summary>
     /// Used to show the settings window
@@ -48,7 +51,19 @@ namespace MPG_Interface.Xaml {
         /// Sets the elements in the window
         /// </summary>
         private async Task SetElements() {
-            grid.ItemsSource = await RestClient.Client.GetSettings();
+            var settingsResponse = await RestClient.Client.GetSettings();
+
+            if (settingsResponse?.Errors == null)
+            {
+                if (settingsResponse?.Data != null && settingsResponse.Data.Count > 0)
+                    grid.ItemsSource = settingsResponse.Data;
+                else
+                    Alerts.ShowMessage("Nu s-a reusit incarcarea setarilor");
+            }
+            else
+            {
+                Alerts.ShowMessage(settingsResponse.Errors.Aggregate(new StringBuilder(), (current, next) => { return current.AppendLine($"Error [{next.Type}] - {next.Message}"); }).ToString());
+            }
         }
     }
 }

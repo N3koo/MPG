@@ -11,7 +11,7 @@ namespace MpgWebService.Repository {
 
         public Task<ServiceResponse<IList<SettingsElement>>> GetSettings() {
             List<SettingsElement> list = new();
-
+            Properties.Settings.Default.Reload(); // TODO: fix!!! this is not updating
             foreach (SettingsProperty data in Properties.Settings.Default.Properties) {
                 list.Add(new() {
                     Name = data.Name,

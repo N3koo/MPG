@@ -6,15 +6,16 @@ using MpgWebService.Presentation.Request.Command;
 using MpgWebService.Presentation.Response.Report;
 using MpgWebService.Presentation.Response.Wrapper;
 using MpgWebService.Repository.Interface;
+using NHibernate.Linq;
 using NHibernate.Transform;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace MpgWebService.Repository {
+namespace MpgWebService.Repository
+{
 
     public class ReportRepository : IReportRepository {
 
@@ -63,8 +64,9 @@ namespace MpgWebService.Repository {
                     .SetString(0, POID).ListAsync<ReportMaterialDto>();
 
                 boms.ForEach(item => {
-                    var material = materials.First(p => p.Item == item.Item);
-                    material.BrutQuantity = item.ItemQty;
+                    var material = materials.FirstOrDefault(p => p.Item == item.Item);
+                    if (material != null)
+                        material.BrutQuantity = item.ItemQty;
                 });
 
                 return ServiceResponse<IList<ReportMaterialDto>>.Ok(materials);
@@ -86,8 +88,9 @@ namespace MpgWebService.Repository {
                     .ListAsync<ReportMaterialDto>();
 
                 boms.ForEach(item => {
-                    var material = materials.First(p => p.Item == item.Item);
-                    material.BrutQuantity = item.ItemQty / boms.Count;
+                    var material = materials.FirstOrDefault(p => p.Item == item.Item);
+                    if (material != null)
+                        material.BrutQuantity = item.ItemQty / boms.Count;
                 });
 
                 return ServiceResponse<IList<ReportMaterialDto>>.Ok(materials);

@@ -7,6 +7,9 @@ using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Windows;
 using MPG_Interface.Module.Data;
+using MPG_Interface.Module.Visual;
+using System.Text;
+using System.Linq;
 
 namespace MPG_Interface.Module.Controller {
 
@@ -60,7 +63,13 @@ namespace MPG_Interface.Module.Controller {
         /// </summary>
         public async Task SetData() {
             var period = FactoryData.CreatePeriod(startDate.SelectedDate.Value, endDate.SelectedDate.Value);
-            tgStatus.ItemsSource = await RestClient.Client.GetStatusCommand(period);
+            var statusResponse = await RestClient.Client.GetStatusCommand(period);
+            if (statusResponse?.Data != null)
+                tgStatus.ItemsSource = statusResponse.Data;
+            else if (statusResponse?.Errors != null)
+                Alerts.ShowMessage(statusResponse?.Errors.Aggregate(new StringBuilder(), (current, next) => { return current.AppendLine($"Error [{next.Type}] - {next.Message}"); }).ToString());
+            else
+                Alerts.ShowMessage("Eroare necunoscuta");
         }
     }
 }

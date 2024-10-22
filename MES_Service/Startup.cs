@@ -1,17 +1,23 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-
+using MpgWebService.Business.Interface.Service;
+using MpgWebService.Business.Interface.Settings;
+using MpgWebService.Business.Service;
+using MpgWebService.Business.Settings;
+using MpgWebService.Repository;
+using MpgWebService.Repository.Clients;
+using MpgWebService.Repository.Command;
+using MpgWebService.Repository.Interface;
 using System.Text.Json;
-using System.IO;
-using Serilog;
 
-namespace MpgWebService {
+namespace MpgWebService
+{
 
     public class Startup {
 
@@ -28,6 +34,25 @@ namespace MpgWebService {
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MpgWebSerice", Version = "v1" });
             });
+
+            // add DI services
+            services.AddTransient<ICommandService, CommandService>();
+            services.AddTransient<IMpgService, MpgService>();
+            services.AddTransient<IProductionService, ProductionService>();
+            services.AddTransient<IReportService, ReportService>();
+            services.AddTransient<ISettingsService, SettingsService>();
+
+            // add other DI
+            services.AddSingleton<ICommandRepository, MesCommandRepository>();
+            services.AddSingleton<IMpgRepository, MpgRepository>();
+            services.AddSingleton<IProductionRepository, ProductionRepository>();
+            services.AddSingleton<IReportRepository, ReportRepository>();
+            services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            services.AddSingleton<ISettings, ConfigSettings>();
+
+            // add DbClient DI
+            services.AddSingleton<MpgClient, MpgClient>();
+            services.AddSingleton<MesClient, MesClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

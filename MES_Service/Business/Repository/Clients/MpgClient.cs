@@ -13,7 +13,6 @@ using NHibernate.Transform;
 using NHibernate.Util;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,7 +29,7 @@ namespace MpgWebService.Repository.Clients {
             "FROM MPG2MES_ProductionOrderPailStatus pails INNER JOIN MES2MPG_ProductionOrders orders " +
             "ON orders.POID = pails.POID " +
             "WHERE orders.Status = 'PRLS' AND pails.QC = '1' AND pails.PailStatus = 'ELB' AND pails.PailNumber = 1 " +
-            "ORDER BY oroders.Priority";
+            "ORDER BY orders.Priority";
 
         public readonly static MpgClient Client = new();
 
